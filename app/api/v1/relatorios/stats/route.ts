@@ -15,10 +15,12 @@ export async function GET(req: Request) {
   const cotacoes = searchParams.get("cotacoes") === "true";
   const servicos = searchParams.get("servicos") === "true";
 
-  const selectedActivities: string[] = [];
+  const selectedActivities: ("cotacao" | "fechamento" | "servico")[] = [];
+
   if (fechamentos) selectedActivities.push("fechamento");
   if (cotacoes) selectedActivities.push("cotacao");
   if (servicos) selectedActivities.push("servico");
+
 
   const pool = new Pool({
     connectionString: process.env.DATABASE_URL,
@@ -44,7 +46,7 @@ export async function GET(req: Request) {
     if (selectedActivities.length > 0) {
       filters.push(inArray(schema.reportsTable.activity_type, selectedActivities));
     }
-    console.log("Dados recebidos:", req.body);
+   
 
 
     const reports = await db

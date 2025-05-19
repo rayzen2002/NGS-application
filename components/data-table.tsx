@@ -53,7 +53,6 @@ import { Area, AreaChart, CartesianGrid, XAxis } from "recharts"
 import { toast } from "sonner"
 import { z } from "zod"
 
-import { useIsMobile } from "@/hooks/use-cotacoes"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import {
@@ -661,7 +660,7 @@ const chartConfig = {
 } satisfies ChartConfig
 
 function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
-  const isMobile = useIsMobile()
+  
 
   return (
     <Sheet>
@@ -678,7 +677,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
           </SheetDescription>
         </SheetHeader>
         <div className="flex flex-1 flex-col gap-4 overflow-y-auto py-4 text-sm">
-          {!isMobile && (
+          (
             <>
               <ChartContainer config={chartConfig}>
                 <AreaChart
@@ -734,7 +733,7 @@ function TableCellViewer({ item }: { item: z.infer<typeof schema> }) {
               </div>
               <Separator />
             </>
-          )}
+          )
           <form className="flex flex-col gap-4">
             <div className="flex flex-col gap-3">
               <Label htmlFor="header">Header</Label>
