@@ -1,0 +1,1 @@
+ALTER TABLE "dealers" ALTER COLUMN "zelle" SET DATA TYPE varchar(255);

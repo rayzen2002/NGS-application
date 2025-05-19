@@ -1,0 +1,1 @@
+ALTER TABLE "reports" ADD COLUMN "trello_card_url" varchar(500);

@@ -1,0 +1,1 @@
+ALTER TABLE "reports" ADD COLUMN "customer" varchar(255) NOT NULL;
