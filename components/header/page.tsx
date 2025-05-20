@@ -3,22 +3,26 @@
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
+
 import {
   CircleDollarSign,
   ComputerIcon,
   Handshake,
   Car,
-  LogOut,
 } from 'lucide-react';
 import Link from 'next/link';
 import { ModeToggle } from '../theme/mode-toggle';
+
+import { LogoutButton } from '../logout-button';
+
 
 interface Props {
   activeTab: 'relatorios' | 'proposta' | 'financeiras';
 }
 
-export function Header({ activeTab }: Props) {
 
+
+export function Header({ activeTab }: Props) {
   return (
     <div className="flex flex-col items-center w-[100%]">
       <div className="mt-6 flex justify-between items-center w-[100%]">
@@ -29,11 +33,7 @@ export function Header({ activeTab }: Props) {
           </div>{' '}
         </div>
 
-        <button
-          className="flex items-center gap-2 text-red-500 hover:text-red-700"
-        >
-          <LogOut className="h-6 w-6" />
-        </button>
+      <LogoutButton />
       </div>
 
       <div className="flex items-center mt-6 mb-6 text-3xl w-[100%]">
