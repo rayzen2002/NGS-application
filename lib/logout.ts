@@ -7,7 +7,11 @@ export function useLogout() {
   const router = useRouter();
 
   const logout = async () => {
-    await fetch('/api/logout');
+    await fetch('/api/logout', {
+    method: 'POST',
+    credentials: 'include',
+  });
+
     toast("Logout realizado com sucesso")
     router.push('/');
   };
