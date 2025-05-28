@@ -9,6 +9,11 @@ import { verifyToken } from "@/lib/verify-token";
 import dayjs from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 dayjs.extend(customParseFormat);
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 
 const pool = new Pool({ connectionString: process.env.DATABASE_URL });
@@ -40,8 +45,8 @@ export async function POST(request: Request) {
       id: item.id,
       backofficer_id: user.id as number,
       seller_id: item.seller_id,
-      started_at: dayjs(item.started_at, "DD/MM/YYYY HH:mm").toDate(),
-      finished_at: dayjs(item.finished_at, "DD/MM/YYYY HH:mm").toDate(),
+      started_at: dayjs.tz(item.started_at, "DD/MM/YYYY HH:mm", "America/Sao_Paulo").utc().toDate(),
+      finished_at: dayjs.tz(item.finished_at, "DD/MM/YYYY HH:mm", "America/Sao_Paulo").utc().toDate(),
       activity_type: item.activity_type,
       customer: item.customer,
       trello_card_url: item.trello_card_url,
