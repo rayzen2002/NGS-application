@@ -138,8 +138,8 @@ export default function RelatorioForm() {
       backofficer_id: backofficerId,
       backofficer_user_name: backofficerName,
       activity_type: r.activity_type,
-      started_at: dayjs(r.started_at).format('DD/MM/YYYY hh:mm'),
-      finished_at: dayjs(r.finished_at).format('DD/MM/YYYY hh:mm'),
+      started_at: dayjs(r.started_at).format('DD/MM/YYYY HH:mm'),
+      finished_at: dayjs(r.finished_at).format('DD/MM/YYYY HH:mm'),
       customer: r.customer,
       trello_card_url: r.activity_type === "fechamento" ? r.trello_card_url : null,
       seller_id: Number(r.seller_id),
@@ -152,7 +152,7 @@ export default function RelatorioForm() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      console.log(payload)
+      
       if (response.ok) {
         toast("Relatório enviado com sucesso!");
         

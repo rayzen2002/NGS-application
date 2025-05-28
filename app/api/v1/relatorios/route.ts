@@ -15,7 +15,7 @@ const pool = new Pool({ connectionString: process.env.DATABASE_URL });
 const db = drizzle(pool, { schema });
 
 export async function POST(request: Request) {
-  console.log("Dados recebidos:", request.body);
+
   
   // Obtém usuário autenticado a partir do token (verificação robusta)
   const user = await verifyToken();
@@ -46,7 +46,7 @@ export async function POST(request: Request) {
       customer: item.customer,
       trello_card_url: item.trello_card_url,
     }));
-    console.log("Dados prontos para inserção:", newRelatorios);
+    
 
     // Insere os relatórios no banco usando uma transação
     const insertedReports = await db.transaction(async (trx) => {

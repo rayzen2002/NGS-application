@@ -12,7 +12,7 @@ import { format } from "date-fns";
 import { CalendarIcon } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { exportToXlsx } from "@/lib/xls-generator";
+import { exportarExcel } from "@/app/backofficer/relatorios/exportar-excel";
 
 export default function DealersPage() {
   const [dateRange, setDateRange] = useState<{
@@ -157,8 +157,8 @@ export default function DealersPage() {
                       const res = await fetch(url);
                       const data = await res.json();
 
-                      // Chama a função de exportação passando os dados retornados
-                      exportToXlsx(data.reports);
+                      
+                      exportarExcel(data.reports,  'Desconhecido');
 
                       console.log("Relatórios encontrados:", data.reports);
                     } catch (error) {

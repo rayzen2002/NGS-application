@@ -1,70 +1,93 @@
-import * as XLSX from 'xlsx';
+import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
 import dayjs from 'dayjs';
-type Dado = Record<string, unknown>
+import utc from 'dayjs/plugin/utc';
+import customParseFormat from 'dayjs/plugin/customParseFormat';
+
+dayjs.extend(utc);
+dayjs.extend(customParseFormat);
+
+type Dado = Record<string, unknown>;
+
 const getVendedores = async (): Promise<Record<string, string>> => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers`);
   const data = await response.json();
 
   const vendedoresMap: Record<string, string> = {};
-  
-  // Preenche o mapa de vendedores com seller_id como chave e nome como valor
   data.users.forEach((user: { id: string; name: string }) => {
     vendedoresMap[user.id] = user.name;
   });
 
   return vendedoresMap;
 };
+
 export const exportarExcel = async (
   dados: Dado[],
-  backofficeName: string // nome do usuário logado
+  backofficeName: string
 ): Promise<void> => {
-  // Obtém o mapeamento de vendedores
   const vendedoresMap = await getVendedores();
 
-  const headers: Record<string, string> = {
-    started_at: 'Início',
-    finished_at: 'Fim',
-    seller_id: 'Vendedor',
-    seller_name: 'Nome',
-    customer: 'Cliente',
-    activity_type: 'Atividade',
-  };
+  const headers = [
+    { key: 'BACKOFFICER', width: 20 },
+    { key: 'SERVIÇO', width: 20 },
+    { key: 'CLIENTE', width: 60 },
+    { key: 'VENDEDOR', width: 40 },
+    { key: 'HORA DE INÍCIO', width: 25 },
+    { key: 'HORA DE TÉRMINO', width: 25 },
+    { key: 'VALOR/OBSERVAÇÃO', width: 30 }
+  ];
 
-  const dadosRenomeados = dados.map((dado) => {
-    const novoDado: Record<string, unknown> = {
-      Backoffice: backofficeName, // adiciona o campo fixo para todos os registros
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Relatório Diário');
+
+  // Define colunas com largura
+  worksheet.columns = headers.map(({ key, width }) => ({
+    header: key,
+    key,
+    width
+  }));
+
+  // Adiciona dados
+  dados.forEach((dado) => {
+    const linha = {
+      'BACKOFFICER': backofficeName.toUpperCase(),
+      'SERVIÇO': String(dado.activity_type || '').toUpperCase(),
+      'CLIENTE': String(dado.customer || '').toUpperCase(),
+      'VENDEDOR': vendedoresMap[String(dado.seller_id).toUpperCase()] || 'Desconhecido',
+      'HORA DE INÍCIO': formatarHora(dado.started_at as string),
+      'HORA DE TÉRMINO': formatarHora(dado.finished_at as string),
     };
-
-    for (const chave in dado) {
-      if (chave === 'seller_id') {
-        novoDado['Vendedor'] = vendedoresMap[dado[chave] as string] || 'Desconhecido';
-      } else if (
-        chave !== 'backofficer_id' &&
-        chave !== 'backofficer_user_name'
-      ) {
-        const novaChave = headers[chave] || chave;
-        novoDado[novaChave] = dado[chave];
-      }
-    }
-    
-
-    return novoDado;
+    worksheet.addRow(linha);
   });
 
-  const ws: XLSX.WorkSheet = XLSX.utils.json_to_sheet(dadosRenomeados);
-  const wb: XLSX.WorkBook = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Relatório Diário');
-
-  const wbout: ArrayBuffer = XLSX.write(wb, {
-    bookType: 'xlsx',
-    type: 'array',
+  // Estiliza cabeçalho
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF4472C4' }, // Azul escuro
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
   });
 
-  const blob = new Blob([wbout], {
-    type: 'application/octet-stream',
+  // Centraliza todas as células com dados (incluindo o cabeçalho)
+  worksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
   });
 
-  const fileName = `relatorio_diario_${dayjs().format('YYYY-MM-DD_HH-mm-ss')}.xlsx`;
+  // Gera o arquivo e salva
+  const buffer = await workbook.xlsx.writeBuffer();
+  const dataHoje = dayjs().format('DD-MM-YYYY');
+  const blob = new Blob([buffer], { type: 'application/octet-stream' });
+  const fileName = `Relatório - ${backofficeName} - ${dataHoje}.xlsx`;
   saveAs(blob, fileName);
 };
+
+// Função auxiliar para formatar hora
+function formatarHora(dataOriginal: string): string {
+  const data = dayjs(dataOriginal, 'DD/MM/YYYY HH:mm', true);
+  return data.isValid() ? data.format('HH:mm') : 'Data Inválida';
+}
