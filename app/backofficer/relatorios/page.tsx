@@ -1,4 +1,3 @@
- 
 "use client";
 
 import { Header } from "@/components/header/page";
@@ -8,8 +7,6 @@ import { jwtDecode } from "jwt-decode";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { exportarExcel } from "./exportar-excel";
-
-
 
 type UserPayload = {
   id: number;
@@ -22,15 +19,11 @@ type Seller = {
   name: string;
 };
 
-
 function getCurrentDateTimeLocal() {
   const now = new Date();
   now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
   return now.toISOString().slice(0, 16);
 }
-
-
-
 
 // Chave para persistência via localStorage
 const STORAGE_KEY = "relatoriosDiarios";
@@ -44,6 +37,7 @@ export default function RelatorioForm() {
       customer: "",
       trello_card_url: "",
       seller_id: "",
+      aditional_info: "", // <-- campo novo adicionado
     },
   ]);
 
@@ -51,7 +45,6 @@ export default function RelatorioForm() {
   const [backofficerId, setBackofficerId] = useState<number | null>(null);
   const [backofficerName, setBackofficerName] = useState<string | null>(null);
 
-  
   const [showPreview, setShowPreview] = useState(false);
 
   const validarFormulario = () => {
@@ -61,7 +54,7 @@ export default function RelatorioForm() {
         toast(`Selecione um vendedor para a atividade ${i + 1}`);
         return false;
       }
-      // Você pode adicionar mais validações aqui se quiser
+      // Se quiser validar o aditional_info, pode adicionar aqui
     }
     return true;
   };
@@ -84,7 +77,7 @@ export default function RelatorioForm() {
   // Recupera informações do token e os vendedores
   useEffect(() => {
     const token = Cookies.get("token");
-    
+
     if (token) {
       try {
         const decoded = jwtDecode<UserPayload>(token);
@@ -95,16 +88,15 @@ export default function RelatorioForm() {
       }
     }
     fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/me`)
-    .then((res) => res.json())
-    .then((data) => setBackofficerName(data.user.username))
-    .catch((err) => console.error("Erro ao buscar vendedores:", err));
+      .then((res) => res.json())
+      .then((data) => setBackofficerName(data.user.username))
+      .catch((err) => console.error("Erro ao buscar vendedores:", err));
 
     fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers?seller_only=true`)
       .then((res) => res.json())
       .then((data) => setSellers(data.users))
       .catch((err) => console.error("Erro ao buscar vendedores:", err));
   }, []);
-  
 
   const addAtividade = () => {
     setRelatorios([
@@ -116,6 +108,7 @@ export default function RelatorioForm() {
         customer: "",
         trello_card_url: "",
         seller_id: "",
+        aditional_info: "", // campo novo na nova linha
       },
     ]);
   };
@@ -131,18 +124,19 @@ export default function RelatorioForm() {
   };
 
   const handleSubmit = async () => {
-    if(!validarFormulario()){
+    if (!validarFormulario()) {
       return;
     }
     const payload = relatorios.map((r) => ({
       backofficer_id: backofficerId,
       backofficer_user_name: backofficerName,
       activity_type: r.activity_type,
-      started_at: dayjs(r.started_at).format('DD/MM/YYYY HH:mm'),
-      finished_at: dayjs(r.finished_at).format('DD/MM/YYYY HH:mm'),
+      started_at: dayjs(r.started_at).format("DD/MM/YYYY HH:mm"),
+      finished_at: dayjs(r.finished_at).format("DD/MM/YYYY HH:mm"),
       customer: r.customer,
       trello_card_url: r.activity_type === "fechamento" ? r.trello_card_url : null,
       seller_id: Number(r.seller_id),
+      aditional_info: r.aditional_info, // inclui no payload
     }));
 
     try {
@@ -152,15 +146,12 @@ export default function RelatorioForm() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-      
+
       if (response.ok) {
         toast("Relatório enviado com sucesso!");
-        
-        await exportarExcel(payload, backofficerName || 'Desconhecido');
-        
-        
 
-        
+        await exportarExcel(payload, backofficerName || "Desconhecido");
+
         // Limpa o formulário e o armazenamento local
         setRelatorios([
           {
@@ -170,17 +161,24 @@ export default function RelatorioForm() {
             customer: "",
             trello_card_url: "",
             seller_id: "",
+            aditional_info: "",
           },
         ]);
 
-        localStorage.setItem(STORAGE_KEY, JSON.stringify([{
-          activity_type: "cotacao",
-          started_at: getCurrentDateTimeLocal(),
-          finished_at: getCurrentDateTimeLocal(),
-          customer: "",
-          trello_card_url: "",
-          seller_id: "",
-        }]));
+        localStorage.setItem(
+          STORAGE_KEY,
+          JSON.stringify([
+            {
+              activity_type: "cotacao",
+              started_at: getCurrentDateTimeLocal(),
+              finished_at: getCurrentDateTimeLocal(),
+              customer: "",
+              trello_card_url: "",
+              seller_id: "",
+              aditional_info: "",
+            },
+          ])
+        );
 
         setShowPreview(false);
       } else {
@@ -191,20 +189,21 @@ export default function RelatorioForm() {
       toast("Erro ao conectar com o servidor");
     }
   };
-  
+
   const generatePreview = () => {
     const previewText = relatorios
       .map((r, i) => {
         // Procurando o vendedor correspondente pelo ID
         const seller = sellers.find((s) => String(s.id) === r.seller_id);
         const sellerName = seller ? seller.name : "Não selecionado";
-        
-        return `Atividade ${i + 1}:\n Tipo: ${r.activity_type}\n Cliente: ${r.customer}\n Início: ${dayjs(r.started_at).format('DD/MM/YYYY hh:mm')}\n Término: ${dayjs(r.finished_at).format('DD/MM/YYYY hh:mm')}\n Vendedor: ${sellerName}`;
+
+        return `Atividade ${i + 1}:\n Tipo: ${r.activity_type}\n Cliente: ${r.customer}\n Início: ${dayjs(r.started_at).format(
+          "DD/MM/YYYY HH:mm"
+        )}\n Término: ${dayjs(r.finished_at).format("DD/MM/YYYY HH:mm")}\n Vendedor: ${sellerName}\n OBSERVAÇÃO/VALORES: ${r.aditional_info}`;
       })
       .join("\n-----------------\n");
     return previewText;
   };
-  
 
   return (
     <div className="px-4 max-w-7xl mx-auto py-6">
@@ -222,6 +221,7 @@ export default function RelatorioForm() {
               <th className="border border-gray-300 p-2">Término</th>
               <th className="border border-gray-300 p-2">Link Trello</th>
               <th className="border border-gray-300 p-2">Vendedor</th>
+              <th className="border border-gray-300 p-2">OBSERVAÇÃO/VALORES</th> 
               <th className="border border-gray-300 p-2 text-center">Ação</th>
             </tr>
           </thead>
@@ -245,6 +245,7 @@ export default function RelatorioForm() {
                     value={r.customer}
                     onChange={(e) => handleChange(index, "customer", e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="Nome do cliente"
                   />
                 </td>
                 <td className="border border-gray-300 p-2 bg-white dark:bg-gray-900">
@@ -264,14 +265,16 @@ export default function RelatorioForm() {
                   />
                 </td>
                 <td className="border border-gray-300 p-2 bg-white dark:bg-gray-900">
-                  {r.activity_type === "fechamento" && (
-                    <input
-                      type="text"
-                      value={r.trello_card_url}
-                      onChange={(e) => handleChange(index, "trello_card_url", e.target.value)}
-                      className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
-                  )}
+                  <input
+                    type="url"
+                    value={r.trello_card_url}
+                    onChange={(e) => handleChange(index, "trello_card_url", e.target.value)}
+                    disabled={r.activity_type !== "fechamento"}
+                    placeholder="URL do card Trello"
+                    className={`w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-900 dark:text-white ${
+                      r.activity_type !== "fechamento" ? "opacity-50 cursor-not-allowed" : ""
+                    } focus:outline-none focus:ring-2 focus:ring-blue-400`}
+                  />
                 </td>
                 <td className="border border-gray-300 p-2 bg-white dark:bg-gray-900">
                   <select
@@ -287,8 +290,26 @@ export default function RelatorioForm() {
                     ))}
                   </select>
                 </td>
-                <td className="border border-gray-300 p-2 bg-white dark:bg-gray-900 text-center">
-                <button onClick={() => removeAtividade(index)} className="bg-red-500 text-white py-1 px-4 rounded-md hover:bg-red-700" > Remover </button>
+                {/* Coluna nova */}
+                <td className="border border-gray-300 p-2 bg-white dark:bg-gray-900">
+                  <input
+                    type="text"
+                    value={r.aditional_info}
+                    onChange={(e) => handleChange(index, "aditional_info", e.target.value)}
+                    placeholder="Observação ou valores"
+                    className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                  />
+                </td>
+
+                <td className="border border-gray-300 p-2 text-center bg-white dark:bg-gray-900">
+                  <button
+                    type="button"
+                    onClick={() => removeAtividade(index)}
+                    className="px-3 py-1 text-red-600 hover:text-red-900"
+                    title="Remover atividade"
+                  >
+                    <p className="text-2xl">&times;</p>
+                  </button>
                 </td>
               </tr>
             ))}
@@ -296,41 +317,36 @@ export default function RelatorioForm() {
         </table>
       </div>
 
-      <div className="mt-4 flex justify-between">
+      <div className="mt-4 flex gap-4">
         <button
           onClick={addAtividade}
-          className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
+          className="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
+          type="button"
         >
-          Adicionar Atividade
+          Adicionar atividade
         </button>
-        
+
         <button
-          onClick={() => setShowPreview(true)}
-          className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
+          onClick={() => setShowPreview(!showPreview)}
+          className="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
+          type="button"
         >
-          Visualizar Relatório
+          {showPreview ? "Esconder prévia" : "Mostrar prévia"}
+        </button>
+
+        <button
+          onClick={handleSubmit}
+          className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
+          type="button"
+        >
+          Enviar relatório
         </button>
       </div>
 
       {showPreview && (
-        <div className="mt-6  p-4 border border-gray-300 rounded shadow">
-          <h3 className="font-semibold text-lg mb-4">Pré-visualização do Relatório</h3>
-          <pre>{generatePreview()}</pre>
-          <div className="mt-4 flex justify-between">
-            <button
-              onClick={() => setShowPreview(false)}
-              className="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600"
-            >
-              Fechar Visualização
-            </button>
-            <button
-              onClick={handleSubmit}
-              className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-            >
-              Enviar Relatório
-            </button>
-          </div>
-        </div>
+        <pre className="mt-6 whitespace-pre-wrap bg-gray-100 dark:bg-gray-800 p-4 rounded border border-gray-300 dark:border-gray-700">
+          {generatePreview()}
+        </pre>
       )}
     </div>
   );

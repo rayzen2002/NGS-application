@@ -1,0 +1,1 @@
+ALTER TABLE "reports" ADD COLUMN "additional_info" varchar(1000);

@@ -21,7 +21,8 @@ export const reportsTable = pgTable("reports", {
   finished_at: timestamp(),
   activity_type: activityTypeEnum(),
   customer: varchar({ length: 255 }).notNull(),
-  trello_card_url: varchar({ length: 500 })
+  trello_card_url: varchar({ length: 500 }),
+  additional_info: varchar({ length: 1000 }), // campo opcional para observações
 });
 
 export const fechamentoPagamentosTable = pgTable("fechamento_pagamentos", {
