@@ -19,7 +19,7 @@ export function SectionCards() {
         <CardHeader className="relative">
           <CardDescription>Receita</CardDescription>
           <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
-            R$ {data.receita?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
+            $ {data.receita?.toLocaleString("pt-BR", { minimumFractionDigits: 2 })}
           </CardTitle>
           <div className="absolute right-4 top-4">
             {typeof data.receitaVariacao === "number" ? (
