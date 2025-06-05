@@ -146,7 +146,7 @@ export default function RelatorioForm() {
         credentials: "include",
         body: JSON.stringify(payload),
       });
-
+      console.log(payload)
       if (response.ok) {
         toast("Relatório enviado com sucesso!");
 

@@ -3,6 +3,11 @@ import { Pool } from "pg";
 import * as schema from "@/src/db/schema";
 import { eq } from "drizzle-orm";
 import { NextResponse } from "next/server";
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc";
+import timezone from "dayjs/plugin/timezone";
+dayjs.extend(utc);
+dayjs.extend(timezone);
 
 // Criar pool global para evitar reconectar a cada requisição
 const pool = new Pool({
@@ -28,21 +33,24 @@ export async function GET() {
     // Mapeia os dados para um formato único por data
     const dataMap = new Map<string, { date: string; fechamentos: number; cotacoes: number }>();
 
-    closings.forEach(({ started_at }) => {
-      const date = started_at.toISOString().split("T")[0]; // Formata a data YYYY-MM-DD
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date, fechamentos: 0, cotacoes: 0 });
-      }
-      dataMap.get(date)!.fechamentos += 1;
-    });
 
-    quotes.forEach(({ started_at }) => {
-      const date = started_at.toISOString().split("T")[0];
-      if (!dataMap.has(date)) {
-        dataMap.set(date, { date, fechamentos: 0, cotacoes: 0 });
-      }
-      dataMap.get(date)!.cotacoes += 1;
-    });
+
+closings.forEach(({ started_at }) => {
+  const date = dayjs(started_at).tz("America/Sao_Paulo").format("YYYY-MM-DD");
+  if (!dataMap.has(date)) {
+    dataMap.set(date, { date, fechamentos: 0, cotacoes: 0 });
+  }
+  dataMap.get(date)!.fechamentos += 1;
+});
+
+quotes.forEach(({ started_at }) => {
+  const date = dayjs(started_at).tz("America/Sao_Paulo").format("YYYY-MM-DD");
+  if (!dataMap.has(date)) {
+    dataMap.set(date, { date, fechamentos: 0, cotacoes: 0 });
+  }
+  dataMap.get(date)!.cotacoes += 1;
+});
+
 
     // Converter o Map em um array para ser usado no gráfico
     const chartData = Array.from(dataMap.values());
