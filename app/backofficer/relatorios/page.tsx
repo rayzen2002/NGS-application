@@ -37,7 +37,7 @@ export default function RelatorioForm() {
       customer: "",
       trello_card_url: "",
       seller_id: "",
-      aditional_info: "", // <-- campo novo adicionado
+      additional_info: "", // <-- campo novo adicionado
     },
   ]);
 
@@ -54,7 +54,7 @@ export default function RelatorioForm() {
         toast(`Selecione um vendedor para a atividade ${i + 1}`);
         return false;
       }
-      // Se quiser validar o aditional_info, pode adicionar aqui
+      
     }
     return true;
   };
@@ -108,7 +108,7 @@ export default function RelatorioForm() {
         customer: "",
         trello_card_url: "",
         seller_id: "",
-        aditional_info: "", // campo novo na nova linha
+        additional_info: "", // campo novo na nova linha
       },
     ]);
   };
@@ -136,7 +136,7 @@ export default function RelatorioForm() {
       customer: r.customer,
       trello_card_url: r.activity_type === "fechamento" ? r.trello_card_url : null,
       seller_id: Number(r.seller_id),
-      aditional_info: r.aditional_info, // inclui no payload
+      additional_info: r.additional_info, 
     }));
 
     try {
@@ -161,7 +161,7 @@ export default function RelatorioForm() {
             customer: "",
             trello_card_url: "",
             seller_id: "",
-            aditional_info: "",
+            additional_info: "",
           },
         ]);
 
@@ -175,7 +175,7 @@ export default function RelatorioForm() {
               customer: "",
               trello_card_url: "",
               seller_id: "",
-              aditional_info: "",
+              additional_info: "",
             },
           ])
         );
@@ -199,7 +199,7 @@ export default function RelatorioForm() {
 
         return `Atividade ${i + 1}:\n Tipo: ${r.activity_type}\n Cliente: ${r.customer}\n Início: ${dayjs(r.started_at).format(
           "DD/MM/YYYY HH:mm"
-        )}\n Término: ${dayjs(r.finished_at).format("DD/MM/YYYY HH:mm")}\n Vendedor: ${sellerName}\n OBSERVAÇÃO/VALORES: ${r.aditional_info}`;
+        )}\n Término: ${dayjs(r.finished_at).format("DD/MM/YYYY HH:mm")}\n Vendedor: ${sellerName}\n OBSERVAÇÃO/VALORES: ${r.additional_info}`;
       })
       .join("\n-----------------\n");
     return previewText;
@@ -292,14 +292,15 @@ export default function RelatorioForm() {
                 </td>
                 {/* Coluna nova */}
                 <td className="border border-gray-300 p-2 bg-white dark:bg-gray-900">
-                  <input
-                    type="text"
-                    value={r.aditional_info}
-                    onChange={(e) => handleChange(index, "aditional_info", e.target.value)}
-                    placeholder="Observação ou valores"
+                  <textarea
+                    value={r.additional_info}
+                    onChange={(e) => handleChange(index, "additional_info", e.target.value)}
                     className="w-full p-2 border border-gray-300 rounded bg-white dark:bg-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-400"
+                    placeholder="Observações ou valores adicionais"
+                    rows={2}
                   />
                 </td>
+
 
                 <td className="border border-gray-300 p-2 text-center bg-white dark:bg-gray-900">
                   <button

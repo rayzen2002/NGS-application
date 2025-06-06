@@ -57,7 +57,7 @@ export const exportarExcel = async (
       'VENDEDOR': vendedoresMap[String(dado.seller_id).toUpperCase()] || 'Desconhecido',
       'HORA DE INÍCIO': formatarHora(dado.started_at as string),
       'HORA DE TÉRMINO': formatarHora(dado.finished_at as string),
-      'VALOR/OBSERVAÇÃO': String(dado.aditional_info || dado.aditional_info || '').toUpperCase()
+      'VALOR/OBSERVAÇÃO': String(dado.additional_info || dado.additional_info || '').toUpperCase()
     };
     worksheet.addRow(linha);
   });

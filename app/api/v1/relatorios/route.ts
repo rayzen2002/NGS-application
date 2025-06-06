@@ -50,6 +50,7 @@ export async function POST(request: Request) {
       activity_type: item.activity_type,
       customer: item.customer,
       trello_card_url: item.trello_card_url,
+      additional_info: item.additional_info, 
     }));
     
 

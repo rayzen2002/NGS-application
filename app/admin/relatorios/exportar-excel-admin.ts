@@ -13,13 +13,14 @@ interface Dado {
   Cliente: string;
   Atividade: string;
   Inicio: string;  // string ISO UTC com 'Z'
-  Final?: string;   // string ISO UTC com 'Z', opcional
+  Final: string;   // string ISO UTC com 'Z', opcional
+  additional_info: string;
   [key: string]: unknown;
 }
 
 export const exportarRelatorioCompleto = async (dados: Dado[]): Promise<void> => {
   const fuso = 'America/Sao_Paulo';
-
+  console.log(dados)
   if (!dados || dados.length === 0) {
     console.warn('Nenhum dado para exportar');
     return;
@@ -48,6 +49,7 @@ export const exportarRelatorioCompleto = async (dados: Dado[]): Promise<void> =>
     { header: 'SERVIÇO', key: 'Atividade', width: 20 },
     { header: 'HORA DE INÍCIO', key: 'Inicio', width: 25 },
     { header: 'HORA DE TÉRMINO', key: 'Final', width: 25 },
+    { header: 'VALOR/OBSERVAÇÃO', key: 'Observacao', width: 45}
   ];
 
   worksheet.getRow(1).eachCell(cell => {
@@ -78,6 +80,7 @@ export const exportarRelatorioCompleto = async (dados: Dado[]): Promise<void> =>
       Atividade: dado.Atividade.toUpperCase(),
       Inicio: formatarHorario(dado.Inicio),
       Final: formatarHorario(dado.Final),
+      Observacao: (dado.additional_info ?? '').toString().toUpperCase()
     });
   });
 

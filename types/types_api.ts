@@ -13,6 +13,7 @@ export type Relatorio = {
   activity_type: ActivityTypeEnum;
   customer: string;
   trello_card_url: string;
+  additional_info: string;
 };
 
 export type RelatoriosResponse = Relatorio[];

@@ -57,6 +57,7 @@ export async function GET(req: Request) {
         Atividade: schema.reportsTable.activity_type,
         Inicio: schema.reportsTable.started_at,
         Final: schema.reportsTable.finished_at,
+        additional_info: schema.reportsTable.additional_info
       })
       .from(schema.reportsTable)
       .leftJoin(backofficerTable, eq(schema.reportsTable.backofficer_id, backofficerTable.id))
