@@ -179,4 +179,12 @@ export const lienholderList = [
     name: "TOC FINANCIAL",
     address: "1771 SPRINGDALE RD, CHERRY HILL, NJ 08003",
   },
+   {
+    name: "STELLANTIS FINANCIAL SERVICES",
+    address: "PO BOX 205749, DALLAS, TX 75320",
+  },
+   {
+    name: "FOURSIGHT CAPITAL",
+    address: " PO BOX 45026, SALT LAKE CITY, UT 84145",
+  },
 ];

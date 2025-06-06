@@ -9,9 +9,9 @@ export default async function Financeiras() {
   return (
       <div className="flex flex-col mx-auto justify-center ">
         <Header activeTab="financeiras" />
-        <div className="">
+        
           <DataTable data={lienholderList} columns={columns} />
-        </div>
+        
       </div>
   );
 }
