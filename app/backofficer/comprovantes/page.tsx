@@ -51,7 +51,7 @@ export default function Comprovantes() {
   const lienholderSelected = watch('lienholder');
 
   const onSubmit = async (data: FormData) => {
-    const response = await fetch('/api/send-to-fastapi', {
+    const response = await fetch('https://api-pdfbinder.onrender.com/generate-pdf/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(data),
