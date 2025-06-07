@@ -11,7 +11,13 @@ const formSchema = z.object({
   zip_code: z.string().min(1, 'CEP é obrigatório'),
   full_name: z.string().min(1, 'Nome completo é obrigatório'),
   address: z.string().min(1, 'Endereço é obrigatório'),
-  new_policy_start_date: z.string().min(1, 'Data de início é obrigatória'),
+  new_policy_start_date: z
+  .string()
+  .min(1, 'Data de início é obrigatória')
+  .refine(
+    (value) => /^\d{2}\/\d{2}\/\d{2}$/.test(value),
+    { message: 'Data deve estar no formato MM/DD/YY' }
+  ),
   vehicle_year: z.string().min(1, 'Ano do veículo é obrigatório'),
   vehicle_make: z.string().min(1, 'Marca é obrigatória'),
   vehicle_model: z.string().min(1, 'Modelo é obrigatório'),
@@ -83,7 +89,7 @@ export default function Comprovantes() {
               <InputField name="zip_code" label="CEP" register={register} errors={errors} />
               <InputField name="full_name" label="Nome Completo" register={register} errors={errors} className="md:col-span-2" />
               <InputField name="address" label="Endereço" register={register} errors={errors} className="md:col-span-3" />
-              <InputField name="new_policy_start_date" label="Data de Início (MM/DD/YYYY)" register={register} errors={errors} />
+              <InputField name="new_policy_start_date" label="Data de Início (MM/DD/YY)" register={register} errors={errors} />
             </div>
           </section>
 
