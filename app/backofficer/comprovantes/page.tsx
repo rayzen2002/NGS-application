@@ -43,7 +43,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function Comprovantes() {
   const validStates = [
   'AR', 'CT', 'FL', 'GA', 'MA', 'MD', 'ME',
-  'NC', 'NH', 'NJ', 'NY', 'OH', 'PA', 'RI'
+  'NC',  'NJ', 'NY', 'OH', 'PA', 'RI'
 ] as const;
 
   const {
