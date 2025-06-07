@@ -1,4 +1,4 @@
-'use client'
+'use client';
 
 import { AppSidebar } from "@/components/app-sidebar";
 import { SiteHeader } from "@/components/site-header";
@@ -60,6 +60,9 @@ export default function Page() {
   const [dataFim, setDataFim] = useState("");
   const [dealers, setDealers] = useState<Dealer[]>([]);
 
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
+
   useEffect(() => {
     async function fetchFechamentos() {
       const api = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos`);
@@ -94,12 +97,10 @@ export default function Page() {
         },
       };
     }
-    
+
     setFechamentos((prev) =>
       prev.map((item) => (item.id === fechamentoId ? atualizarFechamento(item) : item))
     );
-    
-    
   }
 
   async function updateDealer(fechamentoId: number, dealerId: number) {
@@ -124,6 +125,28 @@ export default function Page() {
     );
   }
 
+  const fechamentosFiltrados = fechamentos.filter((f) => {
+    const isPago = f.pagamento?.pago ?? false;
+    const passaFiltroCliente = f.customer.toLowerCase().includes(filtroCliente.toLowerCase());
+    const passaFiltroDataInicio = !dataInicio || new Date(f.started_at) >= new Date(dataInicio);
+    const passaFiltroDataFim = !dataFim || new Date(f.finished_at) <= new Date(dataFim);
+    const passaFiltroPago = !filtroPago || isPago;
+    const passaFiltroPendente = !filtroPendente || !isPago;
+    return (
+      passaFiltroCliente &&
+      passaFiltroDataInicio &&
+      passaFiltroDataFim &&
+      passaFiltroPago &&
+      passaFiltroPendente
+    );
+  });
+
+  const totalPages = Math.ceil(fechamentosFiltrados.length / itemsPerPage);
+  const fechamentosPaginados = fechamentosFiltrados.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
   return (
     <SidebarProvider>
       <AppSidebar variant="inset" />
@@ -134,176 +157,154 @@ export default function Page() {
             Controle de Fechamentos
           </h1>
 
+          {/* Filtros */}
           <div className="max-w-3xl w-full mx-auto mb-4 px-4 md:px-0 space-y-2">
             <input
               type="text"
               placeholder="Filtrar por cliente..."
               value={filtroCliente}
               onChange={(e) => setFiltroCliente(e.target.value)}
-              className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+              className="w-full rounded-md border px-3 py-2 text-sm shadow-sm"
             />
-
             <div className="flex gap-2">
-              <div className="flex gap-4 items-center mb-2 max-w-3xl w-full mx-auto">
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={filtroPago}
-                    onChange={(e) => setFiltroPago(e.target.checked)}
-                    className="accent-green-600"
-                  />
-                  Mostrar apenas pagos
-                </label>
-                <label className="flex items-center gap-2 text-sm">
-                  <input
-                    type="checkbox"
-                    checked={filtroPendente}
-                    onChange={(e) => setFiltroPendente(e.target.checked)}
-                    className="accent-red-600"
-                  />
-                  Mostrar apenas pendentes
-                </label>
-              </div>
-
-              <div className="flex flex-col flex-1">
-                <label htmlFor="inicio" className="text-sm text-gray-600 mb-1">Data início</label>
+              <label className="flex items-center gap-2 text-sm">
                 <input
-                  id="inicio"
-                  type="date"
-                  value={dataInicio}
-                  onChange={(e) => setDataInicio(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  type="checkbox"
+                  checked={filtroPago}
+                  onChange={(e) => setFiltroPago(e.target.checked)}
+                  className="accent-green-600"
                 />
-              </div>
-
-              <div className="flex flex-col flex-1">
-                <label htmlFor="fim" className="text-sm text-gray-600 mb-1">Data fim</label>
+                Mostrar apenas pagos
+              </label>
+              <label className="flex items-center gap-2 text-sm">
                 <input
-                  id="fim"
-                  type="date"
-                  value={dataFim}
-                  onChange={(e) => setDataFim(e.target.value)}
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 text-sm shadow-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                  type="checkbox"
+                  checked={filtroPendente}
+                  onChange={(e) => setFiltroPendente(e.target.checked)}
+                  className="accent-red-600"
                 />
-              </div>
+                Mostrar apenas pendentes
+              </label>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={dataInicio}
+                onChange={(e) => setDataInicio(e.target.value)}
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
+              <input
+                type="date"
+                value={dataFim}
+                onChange={(e) => setDataFim(e.target.value)}
+                className="w-full border rounded-md px-3 py-2 text-sm"
+              />
             </div>
           </div>
 
+          {/* Fechamentos */}
           <div className="space-y-3 max-w-3xl w-full mx-auto px-4 md:px-0">
-            {fechamentos
-              .filter((f) => {
-                const isPago = f.pagamento?.pago ?? false;
-                const passaFiltroCliente = f.customer.toLowerCase().includes(filtroCliente.toLowerCase());
-                const passaFiltroDataInicio = !dataInicio || new Date(f.started_at) >= new Date(dataInicio);
-                const passaFiltroDataFim = !dataFim || new Date(f.finished_at) <= new Date(dataFim);
-                const passaFiltroPago = !filtroPago || isPago;
-                const passaFiltroPendente = !filtroPendente || !isPago;
-                return (
-                  passaFiltroCliente &&
-                  passaFiltroDataInicio &&
-                  passaFiltroDataFim &&
-                  passaFiltroPago &&
-                  passaFiltroPendente
-                );
-              })
-              .map((fechamento) => {
-                const isPago = fechamento.pagamento?.pago ?? false;
-
-                return (
-                  <div
-                    key={fechamento.id}
-                    className={clsx(
-                      "flex flex-col gap-4 md:flex-row md:items-center justify-between rounded-xl border px-4 py-3 transition",
-                      isPago ? "bg-green-50 border-green-200" : "bg-white hover:bg-gray-50"
-                    )}
-                  >
-                    <div className="flex flex-col gap-1 text-sm text-gray-700">
-                      <div className="flex items-center gap-2">
-                        <span className="font-medium text-base">
-                          #{fechamento.id} — {fechamento.customer}
-                        </span>
-                        {isPago && (
-                          <div className="text-green-600 text-sm font-medium flex flex-col gap-1">
-                            <div className="flex items-center gap-1">
-                              <CheckCircle className="w-4 h-4" /> Pago
-                            </div>
-                            {fechamento.pagamento?.marcado_em && (
-                              <span className="text-xs text-gray-500">
-                                Marcado em {new Date(fechamento.pagamento.marcado_em).toLocaleString()}
-                              </span>
-                            )}
-                            {fechamento.pagamento?.marcado_por && (
-                              <span className="text-xs text-gray-500">
-                                Por: {fechamento.pagamento.marcado_por_nome || `ID ${fechamento.pagamento.marcado_por}`}
-                              </span>
-                            )}
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="flex flex-wrap gap-4 text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <User2 className="w-4 h-4" /> Vendedor: {fechamento.seller_nome}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Users2 className="w-4 h-4" /> Backoffice: {fechamento.backofficer_nome}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" /> Início: {new Date(fechamento.started_at).toLocaleString()}
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Clock className="w-4 h-4" /> Fim: {new Date(fechamento.finished_at).toLocaleString()}
-                        </div>
-                        {fechamento.trello_card_url && (
+            {fechamentosPaginados.map((fechamento) => {
+              const isPago = fechamento.pagamento?.pago ?? false;
+              return (
+                <div
+                  key={fechamento.id}
+                  className={clsx(
+                    "flex flex-col gap-4 md:flex-row md:items-center justify-between rounded-xl border px-4 py-3 transition",
+                    isPago ? "bg-green-50 border-green-200" : "bg-white hover:bg-gray-50"
+                  )}
+                >
+                  <div className="flex flex-col gap-1 text-sm text-gray-700">
+                    <div className="flex items-center gap-2">
+                      <span className="font-medium text-base">
+                        #{fechamento.id} — {fechamento.customer}
+                      </span>
+                      {isPago && (
+                        <div className="text-green-600 text-sm font-medium flex flex-col gap-1">
                           <div className="flex items-center gap-1">
-                            <LinkIcon className="w-4 h-4" />
-                            <a
-                              href={fechamento.trello_card_url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-600 hover:underline"
-                            >
-                              Trello
-                            </a>
+                            <CheckCircle className="w-4 h-4" /> Pago
                           </div>
-                        )}
-                      </div>
+                          {fechamento.pagamento?.marcado_em && (
+                            <span className="text-xs text-gray-500">
+                              Marcado em {new Date(fechamento.pagamento.marcado_em).toLocaleString()}
+                            </span>
+                          )}
+                          {fechamento.pagamento?.marcado_por && (
+                            <span className="text-xs text-gray-500">
+                              Por: {fechamento.pagamento?.marcado_por_nome || `ID ${fechamento.pagamento?.marcado_por}`}
+                            </span>
+                          )}
+                        </div>
+                      )}
                     </div>
-
-                    <div className="flex flex-col gap-2 min-w-[200px]">
-                      <label className="text-sm text-gray-600">Dealer associado</label>
-                      <Select
-                        value={fechamento.dealer_id?.toString() || ""}
-                        onValueChange={(value) => updateDealer(fechamento.id, Number(value))}
-                      >
-                        <SelectTrigger className="ldark: text-black font-semibold">
-                        <SelectValue placeholder={fechamento.pagamento?.dealer ?? "Selecionar dealer"} />
-                        </SelectTrigger>
-                        <SelectContent className="dark: bg-blue-600 light:bg-amber-300 ">
-                          {dealers.map((dealer) => (
-                            <SelectItem key={dealer.id} value={dealer.id.toString()}>
-                              {dealer.name}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-
-                      <label className="text-sm text-gray-600">Status de pagamento</label>
-                      <button
-                        onClick={() => togglePago(fechamento.id, !isPago)}
-                        className={clsx(
-                          "text-sm font-medium px-3 py-2 rounded-md border transition",
-                          isPago
-                            ? "bg-green-100 border-green-300 text-green-800 hover:bg-green-200 "
-                            : "bg-red-100 border-red-300 text-red-800 hover:bg-red-200 "
-                        )}
-                      >
-                        {isPago ? "Desmarcar como pago" : "Marcar como pago"}
-                      </button>
+                    <div className="flex flex-wrap gap-4 text-gray-600">
+                      <div className="flex items-center gap-1">
+                        <User2 className="w-4 h-4" /> Vendedor: {fechamento.seller_nome}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Users2 className="w-4 h-4" /> Backoffice: {fechamento.backofficer_nome}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" /> Início: {new Date(fechamento.started_at).toLocaleString()}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="w-4 h-4" /> Fim: {new Date(fechamento.finished_at).toLocaleString()}
+                      </div>
+                      {fechamento.trello_card_url && (
+                        <div className="flex items-center gap-1">
+                          <LinkIcon className="w-4 h-4" />
+                          <a
+                            href={fechamento.trello_card_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-blue-600 hover:underline"
+                          >
+                            Trello
+                          </a>
+                        </div>
+                      )}
                     </div>
                   </div>
-                );
-              })}
+                  <div className="flex flex-col gap-2 min-w-[200px]">
+                    <label className="text-sm text-gray-600">Dealer associado</label>
+                    <Select
+                      value={fechamento.dealer_id?.toString() || ""}
+                      onValueChange={(value) => updateDealer(fechamento.id, Number(value))}
+                    >
+                      <SelectTrigger className="text-black font-semibold">
+                        <SelectValue placeholder={fechamento.pagamento?.dealer ?? "Selecionar dealer"} />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {dealers.map((dealer) => (
+                          <SelectItem key={dealer.id} value={dealer.id.toString()}>
+                            {dealer.name}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              );
+            })}
+
+            {/* Paginação */}
+            <div className="flex justify-center items-center gap-4 mt-6">
+              <button
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                className="px-4 py-2 border rounded disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span>Página {currentPage} de {totalPages}</span>
+              <button
+                onClick={() => setCurrentPage((prev) => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                className="px-4 py-2 border rounded disabled:opacity-50"
+              >
+                Próxima
+              </button>
+            </div>
           </div>
         </div>
       </SidebarInset>
