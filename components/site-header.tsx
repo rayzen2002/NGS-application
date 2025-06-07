@@ -18,9 +18,12 @@ export function SiteHeader() {
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
             {/* Conteúdo do botão aqui, se houver */}
           </Button>
+        
+        </div>
+        <div className="flex gap-8">
+          <ModeToggle />
           <LogoutButton />
         </div>
-        <ModeToggle />
       </div>
     </header>
   )

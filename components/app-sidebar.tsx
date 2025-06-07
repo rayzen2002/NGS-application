@@ -5,23 +5,18 @@ import { ArrowUpCircleIcon } from "lucide-react"
 
 import { NavDocuments } from "./nav-documents"
 import { NavMain } from "./nav-main"
-import { NavUser } from "./nav-user"
+
 import {
   Sidebar,
   SidebarContent,
-  SidebarFooter,
+  
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
 } from "@/components/ui/sidebar"
 
-// Define user data here
-const userData = {
-  name: "shadcn",
-  email: "m@example.com",
-  avatar: "/avatars/shadcn.jpg",
-}
+
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
   return (
@@ -42,9 +37,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <NavMain />
         <NavDocuments />
       </SidebarContent>
-      <SidebarFooter>
+      {/* <SidebarFooter>
         <NavUser user={userData} />
-      </SidebarFooter>
+      </SidebarFooter> */}
     </Sidebar>
   )
 }
