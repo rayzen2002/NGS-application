@@ -2,6 +2,7 @@ import { Button } from "@/components/ui/button"
 import { Separator } from "@/components/ui/separator"
 import { SidebarTrigger } from "@/components/ui/sidebar"
 import { ModeToggle } from "./theme/mode-toggle"
+import { LogoutButton } from "./logout-button"
 
 export function SiteHeader() {
   return (
@@ -17,6 +18,7 @@ export function SiteHeader() {
           <Button variant="ghost" asChild size="sm" className="hidden sm:flex">
             {/* Conteúdo do botão aqui, se houver */}
           </Button>
+          <LogoutButton />
         </div>
         <ModeToggle />
       </div>
