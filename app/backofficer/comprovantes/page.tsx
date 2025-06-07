@@ -41,6 +41,11 @@ interface InputFieldProps {
 type FormData = z.infer<typeof formSchema>;
 
 export default function Comprovantes() {
+  const validStates = [
+  'AR', 'CT', 'FL', 'GA', 'MA', 'MD', 'ME',
+  'NC', 'NJ', 'NY', 'OH', 'PA', 'RI'
+] as const;
+
   const {
     register,
     handleSubmit,
@@ -84,7 +89,21 @@ export default function Comprovantes() {
           <section>
             <h2 className="text-xl font-medium mb-4 text-blue-700">Informações do Cliente</h2>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <InputField name="state" label="Estado (ex: MA)" register={register} errors={errors} />
+              <div>
+            <label className="block text-sm font-medium">Estado</label>
+            <select
+              {...register('state')}
+              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
+            >
+              <option value="">Selecione...</option>
+              {validStates.map((uf) => (
+                <option key={uf} value={uf}>{uf}</option>
+              ))}
+            </select>
+            {errors.state && (
+              <p className="text-sm text-red-500 mt-1">{errors.state.message}</p>
+            )}
+          </div>
               <InputField name="city" label="Cidade" register={register} errors={errors} />
               <InputField name="zip_code" label="CEP" register={register} errors={errors} />
               <InputField name="full_name" label="Nome Completo" register={register} errors={errors} className="md:col-span-2" />
@@ -150,10 +169,14 @@ export default function Comprovantes() {
 function InputField({ name, label, register, errors, className = '' }: InputFieldProps) {
   return (
     <div className={className}>
-      <label className="block text-sm font-medium  ">{label}</label>
+      <label className="block text-sm font-medium">{label}</label>
       <input
-        {...register(name)}
-        className="mt-1 block w-full border  rounded-md px-3 py-2 shadow-sm "
+        {...register(name, {
+          onChange: (e) => {
+            e.target.value = e.target.value.toUpperCase();
+          },
+        })}
+        className="uppercase mt-1 block w-full border rounded-md px-3 py-2 shadow-sm"
       />
       {errors[name] && (
         <p className="text-sm text-red-500 mt-1">{errors[name]?.message}</p>
@@ -161,3 +184,4 @@ function InputField({ name, label, register, errors, className = '' }: InputFiel
     </div>
   );
 }
+
