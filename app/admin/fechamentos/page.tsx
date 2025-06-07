@@ -61,58 +61,58 @@ export default function Page() {
   const [dealers, setDealers] = useState<Dealer[]>([]);
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 5;
-  const indexOfLastFechamento = currentPage * itemsPerPage;
-  const indexOfFirstFechamento = indexOfLastFechamento - itemsPerPage;
-  const currentFechamentos = fechamentos.slice(indexOfFirstFechamento, indexOfLastFechamento);
+
 
   useEffect(() => {
     async function fetchFechamentos() {
-      const api = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos`);
-      const apiJson: FechamentosResponse = await api.json();
-      setFechamentos(apiJson.fechamentos);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos`
+      );
+      const data: FechamentosResponse = await res.json();
+      setFechamentos(data.fechamentos);
     }
     fetchFechamentos();
   }, []);
 
   useEffect(() => {
     async function fetchDealers() {
-      const api = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/dealers/list`);
-      const apiJson: { dealers: Dealer[] } = await api.json();
-      setDealers(apiJson.dealers);
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/dealers/list`
+      );
+      const data: { dealers: Dealer[] } = await res.json();
+      setDealers(data.dealers);
     }
     fetchDealers();
   }, []);
 
   async function togglePago(fechamentoId: number, novoStatus: boolean) {
-    await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos/pagamentos`, {
-      method: "POST",
-      body: JSON.stringify({ report_id: fechamentoId, pago: novoStatus }),
-      headers: { "Content-Type": "application/json" },
-    });
-
-    function atualizarFechamento(item: Fechamento): Fechamento {
-      return {
-        ...item,
-        pagamento: {
-          ...item.pagamento,
-          pago: true,
-        },
-      };
-    }
-    
-    setFechamentos((prev) =>
-      prev.map((item) => (item.id === fechamentoId ? atualizarFechamento(item) : item))
+    await fetch(
+      `${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos/pagamentos`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report_id: fechamentoId, pago: novoStatus }),
+      }
     );
-    
-    
+
+    setFechamentos((prev) =>
+      prev.map((item) =>
+        item.id === fechamentoId
+          ? { ...item, pagamento: { ...item.pagamento, pago: novoStatus } }
+          : item
+      )
+    );
   }
 
   async function updateDealer(fechamentoId: number, dealerId: number) {
-    await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos/atualizar-dealer`, {
-      method: "POST",
-      body: JSON.stringify({ report_id: fechamentoId, dealer_id: dealerId }),
-      headers: { "Content-Type": "application/json" },
-    });
+    await fetch(
+      `${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/fechamentos/atualizar-dealer`,
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ report_id: fechamentoId, dealer_id: dealerId }),
+      }
+    );
 
     const dealerSelecionado = dealers.find((d) => d.id === dealerId);
 
@@ -128,6 +128,34 @@ export default function Page() {
       )
     );
   }
+  const fechamentosFiltrados = fechamentos.filter((f) => {
+    const isPago = f.pagamento?.pago ?? false;
+    const passaFiltroCliente = f.customer.toLowerCase().includes(filtroCliente.toLowerCase());
+    const passaFiltroDataInicio = !dataInicio || new Date(f.started_at) >= new Date(dataInicio);
+    const passaFiltroDataFim = !dataFim || new Date(f.finished_at) <= new Date(dataFim);
+
+
+    // Filtro de pago / pendente:
+    const passaFiltroPagoPendente =
+      (filtroPago && isPago) ||
+      (filtroPendente && !isPago) ||
+      (!filtroPago && !filtroPendente);
+
+    return (
+      passaFiltroCliente &&
+      passaFiltroDataInicio &&
+      passaFiltroDataFim &&
+      passaFiltroPagoPendente
+    );
+  });
+
+  // Paginação sobre o array filtrado
+  const indexOfLastFechamento = currentPage * itemsPerPage;
+  const indexOfFirstFechamento = indexOfLastFechamento - itemsPerPage;
+  const currentFechamentos = fechamentosFiltrados.slice(indexOfFirstFechamento, indexOfLastFechamento);
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [filtroCliente, dataInicio, dataFim, filtroPago, filtroPendente]);
 
   return (
     <SidebarProvider>
@@ -171,7 +199,9 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col flex-1">
-                <label htmlFor="inicio" className="text-sm text-gray-600 mb-1">Data início</label>
+                <label htmlFor="inicio" className="text-sm text-gray-600 mb-1">
+                  Data início
+                </label>
                 <input
                   id="inicio"
                   type="date"
@@ -182,7 +212,9 @@ export default function Page() {
               </div>
 
               <div className="flex flex-col flex-1">
-                <label htmlFor="fim" className="text-sm text-gray-600 mb-1">Data fim</label>
+                <label htmlFor="fim" className="text-sm text-gray-600 mb-1">
+                  Data fim
+                </label>
                 <input
                   id="fim"
                   type="date"
@@ -198,9 +230,12 @@ export default function Page() {
             {currentFechamentos
               .filter((f) => {
                 const isPago = f.pagamento?.pago ?? false;
-                const passaFiltroCliente = f.customer.toLowerCase().includes(filtroCliente.toLowerCase());
-                const passaFiltroDataInicio = !dataInicio || new Date(f.started_at) >= new Date(dataInicio);
-                const passaFiltroDataFim = !dataFim || new Date(f.finished_at) <= new Date(dataFim);
+                const passaFiltroCliente =
+                  f.customer.toLowerCase().includes(filtroCliente.toLowerCase());
+                const passaFiltroDataInicio =
+                  !dataInicio || new Date(f.started_at) >= new Date(dataInicio);
+                const passaFiltroDataFim =
+                  !dataFim || new Date(f.finished_at) <= new Date(dataFim);
                 const passaFiltroPago = !filtroPago || isPago;
                 const passaFiltroPendente = !filtroPendente || !isPago;
                 return (
@@ -234,7 +269,8 @@ export default function Page() {
                             </div>
                             {fechamento.pagamento?.marcado_em && (
                               <span className="text-xs text-gray-500">
-                                Marcado em {new Date(fechamento.pagamento.marcado_em).toLocaleString()}
+                                Marcado em {new Date(
+                                  fechamento.pagamento.marcado_em!).toLocaleString()}
                               </span>
                             )}
                             {fechamento.pagamento?.marcado_por && (
@@ -248,10 +284,10 @@ export default function Page() {
 
                       <div className="flex flex-wrap gap-4 text-gray-600">
                         <div className="flex items-center gap-1">
-                          <User2 className="w-4 h-4" /> Vendedor: {fechamento.seller_nome}
+                          <User2 className="w-4 h-4" /> Vendedor: {fechamento.seller_nome || '-'}
                         </div>
                         <div className="flex items-center gap-1">
-                          <Users2 className="w-4 h-4" /> Backoffice: {fechamento.backofficer_nome}
+                          <Users2 className="w-4 h-4" /> Backoffice: {fechamento.backofficer_nome || '-'}
                         </div>
                         <div className="flex items-center gap-1">
                           <Clock className="w-4 h-4" /> Início: {new Date(fechamento.started_at).toLocaleString()}
@@ -275,16 +311,16 @@ export default function Page() {
                       </div>
                     </div>
 
-                    <div className="flex flex-col gap-2 min-w-[200px]">
+                    <div className="flex flex-col gap-4 min-w-[200px]">
                       <label className="text-sm text-gray-600">Dealer associado</label>
                       <Select
                         value={fechamento.dealer_id?.toString() || ""}
                         onValueChange={(value) => updateDealer(fechamento.id, Number(value))}
                       >
-                        <SelectTrigger className="ldark: text-black font-semibold">
-                        <SelectValue placeholder={fechamento.pagamento?.dealer ?? "Selecionar dealer"} />
+                        <SelectTrigger>
+                          <SelectValue placeholder={fechamento.dealer_nome || "Selecione um dealer"} />
                         </SelectTrigger>
-                        <SelectContent className="dark: bg-blue-600 light:bg-amber-300 ">
+                        <SelectContent>
                           {dealers.map((dealer) => (
                             <SelectItem key={dealer.id} value={dealer.id.toString()}>
                               {dealer.name}
@@ -299,37 +335,36 @@ export default function Page() {
                         className={clsx(
                           "text-sm font-medium px-3 py-2 rounded-md border transition",
                           isPago
-                            ? "bg-green-100 border-green-300 text-green-800 hover:bg-green-200 "
-                            : "bg-red-100 border-red-300 text-red-800 hover:bg-red-200 "
+                            ? "bg-green-100 border-green-300 text-green-800 hover:bg-green-200"
+                            : "bg-red-100 border-red-300 text-red-800 hover:bg-red-200"
                         )}
                       >
                         {isPago ? "Desmarcar como pago" : "Marcar como pago"}
                       </button>
                     </div>
                   </div>
-                  
                 );
               })}
-              <div className="flex justify-center items-center mt-4 space-x-2">
-  <button
-    disabled={currentPage === 1}
-    onClick={() => setCurrentPage(currentPage - 1)}
-    className="px-3 py-1 border rounded disabled:opacity-50"
-  >
-    Anterior
-  </button>
-  <span>
-    Página {currentPage} de {Math.ceil(fechamentos.length / itemsPerPage)}
-  </span>
-  <button
-    disabled={currentPage === Math.ceil(fechamentos.length / itemsPerPage)}
-    onClick={() => setCurrentPage(currentPage + 1)}
-    className="px-3 py-1 border rounded disabled:opacity-50"
-  >
-    Próxima
-  </button>
-</div>
 
+            <div className="flex justify-center items-center mt-4 space-x-2">
+              <button
+                disabled={currentPage === 1}
+                onClick={() => setCurrentPage(currentPage - 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Anterior
+              </button>
+              <span>
+                Página {currentPage} de {Math.ceil(fechamentosFiltrados.length / itemsPerPage)}
+              </span>
+              <button
+                disabled={currentPage === Math.ceil(fechamentosFiltrados.length / itemsPerPage)}
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="px-3 py-1 border rounded disabled:opacity-50"
+              >
+                Próxima
+              </button>
+            </div>
           </div>
         </div>
       </SidebarInset>
