@@ -9,6 +9,7 @@ import {
   ComputerIcon,
   Handshake,
   Car,
+  FileStack,
 } from 'lucide-react';
 import Link from 'next/link';
 import { ModeToggle } from '../theme/mode-toggle';
@@ -17,7 +18,7 @@ import { LogoutButton } from '../logout-button';
 
 
 interface Props {
-  activeTab: 'relatorios' | 'proposta' | 'financeiras';
+  activeTab: 'relatorios' | 'proposta' | 'financeiras' | 'comprovantes';
 }
 
 
@@ -98,6 +99,18 @@ export function Header({ activeTab }: Props) {
             >
               <CircleDollarSign />
               Financeiras
+            </Link>
+            <Link
+              href="/backofficer/comprovantes"
+              className="flex items-center lg:space-x-6 text-xl gap-2 py-2"
+              style={
+                activeTab === 'comprovantes'
+                  ? { borderBottom: '4px solid #1D4ED8' }
+                  : {}
+              }
+            >
+              <FileStack />
+              Comprovantes
             </Link>
           </nav>
 
