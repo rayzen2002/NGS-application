@@ -51,6 +51,8 @@ export default function Comprovantes() {
     register,
     handleSubmit,
     watch,
+    setValue,
+    trigger,
     formState: { errors, isSubmitting },
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
@@ -92,7 +94,13 @@ export default function Comprovantes() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
             <label className="block text-sm font-medium">Estado</label>
-            <Select onValueChange={(value) => register('state').onChange({ target: { value } })}>
+           <Select
+                onValueChange={(value) => {
+                  setValue('state', value);
+                  trigger('state');
+                }}
+>
+
               <SelectTrigger className="mt-1 w-full">
                 <SelectValue placeholder="Selecione..." />
               </SelectTrigger>
