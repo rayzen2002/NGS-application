@@ -1,6 +1,6 @@
 // app/api/metrics/route.ts
 import { NextResponse } from "next/server";
-import { eq, gte, lte, and } from "drizzle-orm";
+import { eq, gte, lte, and } from "drizzle-orm"; // Adicionando orderBy para ordenação
 import { db } from "@/lib/db";
 import { reportsTable, usersTable } from "@/src/db/schema";
 
@@ -34,7 +34,8 @@ export async function GET(request: Request) {
         name: usersTable.name,
       })
       .from(usersTable)
-      .where(eq(usersTable.role, "backofficer"));
+      .where(eq(usersTable.role, "backofficer"))
+      .orderBy(usersTable.name); // Ordenando por nome
 
     const reports = await db
       .select({

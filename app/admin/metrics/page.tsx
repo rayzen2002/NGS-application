@@ -22,15 +22,15 @@ type Metric = {
 };
 
 const COLORS = [
-  "#6A4C93", // Azul vibrante
-  "#E94F37 ", // Laranja queimado
-  "#44BBA4", // Turquesa
   "#FF3366", // Vermelho terroso
+  "#FF6B35",
+  "#E94F37", // Laranja queimado
+  "#6A4C93", // Azul vibrante
+  "#2EC4B6", // Verde água
   "#3F88C5", // Roxo profundo
   "#F9C22E", // Amarelo ouro
+  "#44BBA4", // Turquesa
   "#A63A50", // Vinho
-  "#2EC4B6", // Verde água
-  "#FF6B35 "  // Rosa neon
 ];
 
 export default function Page() {
