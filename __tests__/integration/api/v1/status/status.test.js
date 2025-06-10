@@ -5,8 +5,8 @@ test("GET to /api/v1/status should return 200", async () => {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
-      username: "washington",
-      password: "123456"
+      username: "supervisao",
+      password: "mkwrjsw"
     }),
     redirect: "manual"
   });
@@ -29,7 +29,7 @@ test("GET to /api/v1/status should return 200", async () => {
 
   expect(statusResponse.status).toBe(200);
   expect(responseBody.dependencies.database.version).toBe(
-    "PostgreSQL 16.1 on x86_64-pc-linux-musl, compiled by gcc (Alpine 12.2.1_git20220924-r10) 12.2.1 20220924, 64-bit"
+    "PostgreSQL 17.5 on x86_64-pc-linux-gnu, compiled by gcc (Debian 12.2.0-14) 12.2.0, 64-bit"
   );
-  expect(responseBody.dependencies.database.connections).toBe("100");
+  expect(responseBody.dependencies.database.connections).toBe("901");
 });

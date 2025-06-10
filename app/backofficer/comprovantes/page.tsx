@@ -4,6 +4,7 @@ import { FieldError, useForm, UseFormRegister } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Header } from '@/components/header/page';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
 const formSchema = z.object({
   state: z.string().min(1, 'Estado é obrigatório'),
@@ -91,16 +92,19 @@ export default function Comprovantes() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <div>
             <label className="block text-sm font-medium">Estado</label>
-            <select
-              {...register('state')}
-              className="mt-1 block w-full border border-gray-300 rounded-md px-3 py-2 shadow-sm focus:ring-blue-500 focus:border-blue-500"
-            >
-              <option value="">Selecione...</option>
-              {validStates.map((uf) => (
-                <option key={uf} value={uf}>{uf}</option>
-              ))}
-            </select>
-            {errors.state && (
+            <Select onValueChange={(value) => register('state').onChange({ target: { value } })}>
+              <SelectTrigger className="mt-1 w-full">
+                <SelectValue placeholder="Selecione..." />
+              </SelectTrigger>
+              <SelectContent className='bg-blue-500'>
+                {validStates.map((uf) => (
+                  <SelectItem key={uf} value={uf}>
+                    {uf}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+                        {errors.state && (
               <p className="text-sm text-red-500 mt-1">{errors.state.message}</p>
             )}
           </div>

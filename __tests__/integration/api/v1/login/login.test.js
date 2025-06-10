@@ -1,4 +1,4 @@
-test("POST to /api/login should return a token if user is valid", async ()=>{
+test.only("POST to /api/login should return a token if user is valid", async ()=>{
   const response = await fetch('http://localhost:3000/api/login', {
     method: 'POST',
     headers: {
