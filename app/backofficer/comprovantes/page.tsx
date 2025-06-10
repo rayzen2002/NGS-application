@@ -44,7 +44,7 @@ type FormData = z.infer<typeof formSchema>;
 export default function Comprovantes() {
   const validStates = [
   'AR', 'CT', 'FL', 'GA', 'MA', 'MD', 'ME',
-  'NC',  'NJ', 'NY', 'OH', 'PA', 'RI'
+  'NC', 'NH',  'NJ', 'NY', 'OH', 'PA', 'RI', 'SC'
 ] as const;
 
   const {
@@ -65,6 +65,7 @@ export default function Comprovantes() {
   const lienholderSelected = watch('lienholder');
 
   const onSubmit = async (data: FormData) => {
+    console.log(data)
     const response = await fetch('https://api-pdfbinder.onrender.com/generate-pdf/', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -119,7 +120,7 @@ export default function Comprovantes() {
               <InputField name="city" label="Cidade" register={register} errors={errors} />
               <InputField name="zip_code" label="CEP" register={register} errors={errors} />
               <InputField name="full_name" label="Nome Completo" register={register} errors={errors} className="md:col-span-2" />
-              <InputField name="address" label="Endereço" register={register} errors={errors} className="md:col-span-3" />
+              <InputField name="address" label="Endereço (ex: 123 Main St Apt 4)" register={register} errors={errors} className="md:col-span-3" />
               <InputField name="new_policy_start_date" label="Data de Início (MM/DD/YY)" register={register} errors={errors} />
             </div>
           </section>
