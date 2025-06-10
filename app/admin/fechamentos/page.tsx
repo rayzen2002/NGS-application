@@ -317,10 +317,10 @@ export default function Page() {
                         value={fechamento.dealer_id?.toString() || ""}
                         onValueChange={(value) => updateDealer(fechamento.id, Number(value))}
                       >
-                        <SelectTrigger>
+                        <SelectTrigger className="text-black">
                           <SelectValue placeholder={fechamento.dealer_nome || "Selecione um dealer"} />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-blue-500">
                           {dealers.map((dealer) => (
                             <SelectItem key={dealer.id} value={dealer.id.toString()}>
                               {dealer.name}
