@@ -21,7 +21,17 @@ type Metric = {
   servicos: number;
 };
 
-const COLORS = ["#8884d8", "#82ca9d", "#ffc658", "#ff7f50", "#00c49f", "#d0ed57", "#a4de6c"];
+const COLORS = [
+  "#6A4C93", // Azul vibrante
+  "#E94F37 ", // Laranja queimado
+  "#44BBA4", // Turquesa
+  "#FF3366", // Vermelho terroso
+  "#3F88C5", // Roxo profundo
+  "#F9C22E", // Amarelo ouro
+  "#A63A50", // Vinho
+  "#2EC4B6", // Verde água
+  "#FF6B35 "  // Rosa neon
+];
 
 export default function Page() {
   const [data, setData] = useState<Metric[]>([]);
@@ -137,7 +147,7 @@ export default function Page() {
   {["cotacoes", "fechamentos", "servicos"].map((key) => (
     <div key={key} className="flex flex-col items-center">
       <h2 className="text-xl font-semibold mb-6 mt-20 capitalize text-center">{key}</h2>
-      <ResponsiveContainer width="100%" height={350}>
+      <ResponsiveContainer width="100%" height={350} >
         <PieChart>
           <Pie
             data={generatePieData(key as keyof Metric)}

@@ -12,7 +12,7 @@ type Metric = {
 
 export function MetricsChart({ data }: { data: Metric[] }) {
   return (
-    <div className="w-full h-[400px] bg-white p-4 rounded-xl shadow-md">
+    <div className="w-full h-[400px]  p-4 rounded-xl shadow-md">
       <h2 className="text-xl font-semibold mb-4">Performance dos Backofficers</h2>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
