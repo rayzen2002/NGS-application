@@ -46,6 +46,11 @@ export function NavMain() {
       url: "/admin/dealers",
       iconName: "users",
     },
+       {
+      title: "Vendedores",
+      url: "/admin/sellers",
+      iconName: "users",
+    },
   ]
 
   const renderIcon = (iconName: string) => {

@@ -14,7 +14,7 @@ import {
   Legend
 } from "recharts";
 
-type Metric = {
+type MetricBackofficer = {
   backofficer: string;
   cotacoes: number;
   fechamentos: number;
@@ -22,23 +22,18 @@ type Metric = {
 };
 
 const COLORS = [
-  "#FF3366", // Vermelho terroso
-  "#FF6B35",
-  "#E94F37", // Laranja queimado
-  "#6A4C93", // Azul vibrante
-  "#2EC4B6", // Verde água
-  "#3F88C5", // Roxo profundo
-  "#F9C22E", // Amarelo ouro
-  "#44BBA4", // Turquesa
-  "#A63A50", // Vinho
+  "#FF3366", "#FF6B35", "#E94F37", "#6A4C93", "#2EC4B6",
+  "#3F88C5", "#F9C22E", "#44BBA4", "#A63A50",
 ];
 
 export default function Page() {
-  const [data, setData] = useState<Metric[]>([]);
+  const [data, setData] = useState<MetricBackofficer[]>([]);
   const [loading, setLoading] = useState(true);
   const [start, setStart] = useState<string>('');
   const [end, setEnd] = useState<string>('');
   const [error, setError] = useState<string | null>(null);
+  const [fullMonth, setFullMonth] = useState(false);
+
   const startDisplay = start || new Date(new Date().setDate(1)).toISOString().split('T')[0];
   const endDisplay = end || new Date().toISOString().split('T')[0];
 
@@ -51,22 +46,27 @@ export default function Page() {
     try {
       setLoading(true);
       setError(null);
+
       const params = new URLSearchParams();
-      if (startDate) params.append("start", startDate);
-      if (endDate) params.append("end", endDate);
-
-      const res = await fetch(`/api/v1/metrics?${params.toString()}`, {
-        cache: "no-store"
-      });
-
-      if (!res.ok) {
-        throw new Error("Falha ao buscar métricas");
+      if (fullMonth && startDate) {
+        // se "ver mês inteiro" estiver marcado, ajusta para início/fim do mês
+        const date = new Date(startDate);
+        const firstDay = new Date(date.getFullYear(), date.getMonth(), 1);
+        const lastDay = new Date(date.getFullYear(), date.getMonth() + 1, 0);
+        params.append("start", firstDay.toISOString().split("T")[0]);
+        params.append("end", lastDay.toISOString().split("T")[0]);
+      } else {
+        if (startDate) params.append("start", startDate);
+        if (endDate) params.append("end", endDate);
       }
 
-      const json = await res.json();
+      const res = await fetch(`/api/v1/metrics?${params.toString()}`, { cache: "no-store" });
+      if (!res.ok) throw new Error("Falha ao buscar métricas");
+
+      const json: MetricBackofficer[] = await res.json();
       setData(json);
     } catch (err) {
-      console.error(err)
+      console.error(err);
       setError("Erro ao buscar dados");
     } finally {
       setLoading(false);
@@ -75,19 +75,30 @@ export default function Page() {
 
   useEffect(() => {
     fetchMetrics();
-  }, []);
+  }, [fullMonth]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     fetchMetrics(start, end);
   };
 
-  const generatePieData = (type: keyof Metric) => {
+  const generatePieData = (type: keyof MetricBackofficer) => {
     return data.map(d => ({
       name: d.backofficer,
       value: d[type],
     }));
   };
+
+  // Mapeia MetricBackofficer para Metric para usar no MetricsChart
+  const mappedData = data.map(d => ({
+    sellerId: 0,
+    sellerName: d.backofficer,
+    cotacoes: d.cotacoes,
+    fechamentos: d.fechamentos,
+    servicos: d.servicos,
+    total: d.cotacoes + d.fechamentos + d.servicos,
+    taxaConversao: d.fechamentos / (d.cotacoes || 1),
+  }));
 
   return (
     <SidebarProvider>
@@ -116,6 +127,15 @@ export default function Page() {
                 className="border rounded px-3 py-2"
               />
             </div>
+            <div className="flex items-center gap-2 mt-4">
+              <input
+                type="checkbox"
+                checked={fullMonth}
+                onChange={() => setFullMonth(!fullMonth)}
+                id="fullMonth"
+              />
+              <label htmlFor="fullMonth" className="text-gray-700 text-sm">Ver mês inteiro</label>
+            </div>
             <button
               type="submit"
               className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
@@ -129,64 +149,47 @@ export default function Page() {
           {(start || end) && (
             <p className="text-sm text-gray-600 mb-2">
               Exibindo dados de{" "}
-              <span className="font-medium">
-                {formatDateToBR(startDisplay)}
-              </span>{" "}
+              <span className="font-medium">{formatDateToBR(startDisplay)}</span>{" "}
               até{" "}
-              <span className="font-medium">
-                {formatDateToBR(endDisplay)}
-              </span>
+              <span className="font-medium">{formatDateToBR(endDisplay)}</span>
             </p>
           )}
 
-          {!loading && !error && (
+          {!loading && !error && data.length > 0 && (
             <>
-              <MetricsChart data={data} />
+              <MetricsChart data={mappedData} />
 
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-  {["cotacoes", "fechamentos", "servicos"].map((key) => (
-    <div key={key} className="flex flex-col items-center">
-      <h2 className="text-xl font-semibold mb-6 mt-20 capitalize text-center">{key}</h2>
-      <ResponsiveContainer width="100%" height={350} >
-        <PieChart>
-          <Pie
-            data={generatePieData(key as keyof Metric)}
-            dataKey="value"
-            nameKey="name"
-            cx="50%" // centraliza o gráfico horizontalmente
-            cy="50%"
-            outerRadius={80}
-            fill="#8884d8"
-            label
-          >
-            {data.map((_, idx) => (
-              <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
-            ))}
-          </Pie>
-          <Tooltip />
-          <Legend
-            wrapperStyle={{ marginTop: 60 }}
-            content={({ payload }) => (
-              <ul className="flex flex-wrap justify-center gap-x-8 gap-y-4 mt-8">
-                {payload?.map((entry, index) => (
-                  <li key={`item-${index}`} className="flex items-center gap-2 text-sm">
-                    <span
-                      className="inline-block w-3 h-3 rounded"
-                      style={{ backgroundColor: entry.color }}
-                    />
-                    {entry.value}
-                  </li>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-12">
+                {["cotacoes", "fechamentos", "servicos"].map(key => (
+                  <div key={key} className="flex flex-col items-center">
+                    <h2 className="text-xl font-semibold mb-6 capitalize text-center">{key}</h2>
+                    <ResponsiveContainer width="100%" height={350}>
+                      <PieChart>
+                        <Pie
+                          data={generatePieData(key as keyof MetricBackofficer)}
+                          dataKey="value"
+                          nameKey="name"
+                          cx="50%"
+                          cy="50%"
+                          outerRadius={80}
+                          label
+                        >
+                          {data.map((_, idx) => (
+                            <Cell key={`cell-${idx}`} fill={COLORS[idx % COLORS.length]} />
+                          ))}
+                        </Pie>
+                        <Tooltip />
+                        <Legend wrapperStyle={{ marginTop: 60 }} />
+                      </PieChart>
+                    </ResponsiveContainer>
+                  </div>
                 ))}
-              </ul>
-            )}
-          />
-        </PieChart>
-      </ResponsiveContainer>
-    </div>
-  ))}
-</div>
-
+              </div>
             </>
+          )}
+
+          {!loading && !error && data.length === 0 && (
+            <p className="text-gray-600">Nenhum dado encontrado para o período selecionado.</p>
           )}
         </main>
       </SidebarInset>
