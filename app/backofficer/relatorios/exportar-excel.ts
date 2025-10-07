@@ -10,7 +10,7 @@ dayjs.extend(customParseFormat);
 type Dado = Record<string, unknown>;
 
 const getVendedores = async (): Promise<Record<string, string>> => {
-  const response = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers`);
+  const response = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers-info`);
   const data = await response.json();
 
   const vendedoresMap: Record<string, string> = {};
