@@ -110,7 +110,7 @@ export default function RelatorioForm() {
       .then((data) => setBackofficerName(data.user.username))
       .catch((err) => console.error("Erro ao buscar vendedores:", err));
 
-    fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers?seller_only=true`)
+    fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers-info?seller_only=true`)
       .then((res) => res.json())
       .then((data) => setSellers(data.users))
       .catch((err) => console.error("Erro ao buscar vendedores:", err));
