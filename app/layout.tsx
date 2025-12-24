@@ -7,8 +7,6 @@ import { ThemeProvider } from "@/components/theme/theme-provider";
 import { cn } from "@/lib/utils";
 import "./globals.css";
 import { Toaster } from "sonner";
-import { Analytics } from '@vercel/analytics/next';
-import { SpeedInsights } from '@vercel/speed-insights/next';
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -43,8 +41,6 @@ export default function RootLayout({
             disableTransitionOnChange
           >
             {children}
-            <SpeedInsights />
-            <Analytics />
           </ThemeProvider>
         </body>
       </html>
