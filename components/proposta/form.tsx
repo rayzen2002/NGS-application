@@ -1,5 +1,5 @@
 'use client';
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { z } from 'zod';
@@ -13,6 +13,9 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import CurrencyInput from '../ui/currency-input';
 import { Button } from '../ui/button';
+
+
+
 
 const formSchema = z.object({
   customersNames: z.string().min(2, {
@@ -35,12 +38,34 @@ const formSchema = z.object({
   paymentOptions: z.enum(['3', '5', '6', '11']),
   isFinanced: z.boolean(),
   language: z.enum(['Português', 'Espanhol']),
-  // seguradora: z.string().nonempty({ message: 'Seguradora é obrigatória' }),
-  // vendedor: z.string().nonempty({ message: 'Vendedor é obrigatório' }),
+  salesTeam: z.enum(['Time Jessica' , 'Time Nathalia'], {
+    required_error: `Selecione um time de vendas`
+  })
 });
 
 export function ProposalForm() {
   const [loadingRequest, setLoadingRequest] = useState<boolean>(false);
+  const [userName, setUserName] = useState<string>();
+
+  useEffect(() => {
+    async function fetchMe() {
+      try {
+        const res = await fetch('/api/me', {
+          credentials: 'include',
+        });
+
+        if (!res.ok) return;
+
+        const data = await res.json();
+        setUserName(data.user.username);
+      } catch (error) {
+        console.error('Erro ao buscar usuário:', error);
+      }
+    }
+
+    fetchMe();
+  }, []);
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -58,6 +83,7 @@ export function ProposalForm() {
       paymentOptions: '6',
       isFinanced: true, // Default to "Financiado"
       language: 'Português',
+      salesTeam: 'Time Jessica'
       // seguradora: '', // Empty by default
       // vendedor: '', // Empty by default
     },
@@ -84,8 +110,10 @@ export function ProposalForm() {
       paymentOptions: values.paymentOptions,
       isFinanced: values.isFinanced.toString(),
       language: values.language,
+      salesTeam: values.salesTeam,
+      backofficer : userName || 'null',
     };
-
+    
     // Only include Liability options if isFinanced is false
     if (!values.isFinanced) {
       paramsObj.optionADueToday = values.optionADueToday.toString();
@@ -98,6 +126,7 @@ export function ProposalForm() {
     console.log(paramsObj)
     window.open(imageUrl, '_blank');
   }
+
 
   // const isLoading = loadingSeguradoras || loadingVendedores;
 
@@ -186,36 +215,7 @@ export function ProposalForm() {
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="isFinanced"
-                render={({ field }: any) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-left">
-                      Status do veículo
-                    </FormLabel>
-                    <FormControl>
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center">
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                          <span className="ml-2">Financiado</span>
-                        </label>
-                        <label className="flex items-center">
-                          <Checkbox
-                            checked={!field.value}
-                            onCheckedChange={() => field.onChange(false)}
-                          />
-                          <span className="ml-2">Quitado</span>
-                        </label>
-                      </div>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+             
             </div>
           </div>
 
@@ -438,6 +438,61 @@ export function ProposalForm() {
           </div>
 
           {/* Language Selection Field */}
+           <FormField
+                control={form.control}
+                name="isFinanced"
+                render={({ field }: any) => (
+                  <FormItem>
+                    <FormLabel className="text-base text-left">
+                      Status do veículo
+                    </FormLabel>
+                    <FormControl>
+                      <div className="flex items-center gap-4">
+                        <label className="flex items-center">
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                          />
+                          <span className="ml-2">Financiado</span>
+                        </label>
+                        <label className="flex items-center">
+                          <Checkbox
+                            checked={!field.value}
+                            onCheckedChange={() => field.onChange(false)}
+                          />
+                          <span className="ml-2">Quitado</span>
+                        </label>
+                      </div>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+  control={form.control}
+  name="salesTeam"
+  render={({ field }: any) => (
+    <FormItem>
+      <FormLabel className="text-base text-left">
+        Time de vendas
+      </FormLabel>
+      <FormControl>
+        <select
+          {...field}
+          className="border p-2 rounded-md w-full text-base dark:bg-inherit"
+        >
+          <option value="Time Jessica" className="dark:text-black">
+            Time Jessica
+          </option>
+          <option value="Time Nathalia" className="dark:text-black">
+            Time Nathalia
+          </option>
+        </select>
+      </FormControl>
+      <FormMessage />
+    </FormItem>
+  )}
+/>
           <FormField
             control={form.control}
             name="language"

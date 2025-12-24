@@ -1,7 +1,13 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
-import jwt from "jsonwebtoken";
+
 import { LoginForm } from "@/components/login-form.tsx/page";
+import { jwtVerify } from "jose";
+
+type JWTPayload = {
+  username: string;
+  role: "admin" | "backofficer" | "user";
+};
 
 export default async function Home() {
   const cookieStore = await cookies();
@@ -9,22 +15,20 @@ export default async function Home() {
 
   if (token) {
     try {
-      const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret123") as {
-        username: string;
-        role: string;
-      };
+      const secret = new TextEncoder().encode(process.env.JWT_SECRET!);
+
+      const { payload } = await jwtVerify<JWTPayload>(token, secret);
 
       // redireciona baseado na role do token
-      if (decoded.role === "admin") {
+      if (payload.role === "admin") {
         redirect("/admin/dashboard");
-      } else if (decoded.role === "backofficer") {
+      } else if (payload.role === "backofficer") {
         redirect("/backofficer");
       } else {
         redirect("/user/dashboard");
       }
     } catch (err) {
       console.error("Token inválido no servidor:", err);
-      // token inválido → continua e mostra o form de login
     }
   }
 
