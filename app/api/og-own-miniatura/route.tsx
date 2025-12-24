@@ -45,6 +45,20 @@ export async function GET(request: Request) {
     const language = searchParams.get('language') || 'Português';
     const isFinanciado = searchParams.get('isFinanciado') === 'true';
 
+    const backofficerName = searchParams.get('backofficer') || 'null'
+    const sellerTeamName = searchParams.get('salesTeam') || 'null'
+
+    const backofficerNameInitial = backofficerName.charAt(0) 
+    const salesTeamNameInitial = sellerTeamName.charAt(5) 
+    const now = new Date()
+
+    const day = String(now.getDate()).padStart(2, '0')
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const year = String(now.getFullYear()).slice(-2)
+    const hour = String(now.getHours()).padStart(2, '0')
+  
+    const code = backofficerNameInitial + salesTeamNameInitial + day + month + year + hour
+
     // Gerar a imagem correta com base no financiamento e idioma
     const imageSrc = getImageSrc(isFinanciado, language);
  
@@ -154,6 +168,11 @@ export async function GET(request: Request) {
 <div tw="flex absolute top-[216] right-[51] w-[40] justify-center items-center">
   <p tw="text-[33px] text-5xl font-bold">
     ${calculateTotal(optionCDueToday, fee, optionCMonthly, numberOfPayments)}
+  </p>
+</div>
+<div tw="flex absolute bottom-[0] right-[0] w-[35] justify-center items-center">
+  <p tw="text-[33px] text-xl font-bold" style={{  }}>
+    {code}
   </p>
 </div>
 
