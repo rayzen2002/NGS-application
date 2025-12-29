@@ -77,7 +77,12 @@ export async function GET(request: Request) {
 >
 </div>
 
-          <img src={imageSrc} alt="proposta" />
+          <img
+  src={imageSrc}
+  width={1920}
+  height={1080}
+/>
+
 
             {/* Dados principais */}
             <div tw="flex absolute top-71 left-27 w-135 h-27  text-start items-center  overflow-hidden  ">
