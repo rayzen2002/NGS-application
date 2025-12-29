@@ -19,10 +19,11 @@ const truncateValue = (value : number) => {
 };
 
 // Função para renderizar as opções de imagem baseadas em financiado e idioma
-const getImageSrc = (isFinanciado: boolean, language: string) => {
+const getImageSrc = (isFinanciado: boolean, language: string, salesTeam: string) => {
   const imgType = isFinanciado ? '2ops' : '3ops';
   const langSuffix = language === 'Português' ? 'pt' : 'es';
-  return `${IMG_BASE_URL}proposta-miniatura-${langSuffix}-${imgType}.png`;
+  const teamSuffix = salesTeam === 'Time Jessica' ? 'a' : 'b'
+  return `${IMG_BASE_URL}proposta-miniatura-${langSuffix}-${imgType}-${teamSuffix}.png`;
 };
 
 export async function GET(request: Request) {
@@ -48,9 +49,11 @@ export async function GET(request: Request) {
     const backofficerName = searchParams.get('backofficer') || 'null'
     const sellerTeamName = searchParams.get('salesTeam') || 'null'
 
-    const backofficerNameInitial = backofficerName.charAt(0) 
+    const backofficerNameInitial = backofficerName.slice(0, 2)
+
     const salesTeamNameInitial = sellerTeamName.charAt(5) 
     const now = new Date()
+    now.setHours(now.getHours() - 3)
 
     const day = String(now.getDate()).padStart(2, '0')
     const month = String(now.getMonth() + 1).padStart(2, '0')
@@ -60,7 +63,7 @@ export async function GET(request: Request) {
     const code = backofficerNameInitial + salesTeamNameInitial + day + month + year + hour
 
     // Gerar a imagem correta com base no financiamento e idioma
-    const imageSrc = getImageSrc(isFinanciado, language);
+    const imageSrc = getImageSrc(isFinanciado, language, sellerTeamName);
  
     // const font = await fontData
 
@@ -85,7 +88,7 @@ export async function GET(request: Request) {
 
           {/* Dados principais */}
           <div tw="flex absolute top-[113] right-[248] w-[40] justify-center items-center">
-          <p tw="text-[33px] text-white text-4xl font-bold">
+          <p tw="text-[33px] font-black text-4xl font-bold">
           {parseInt(numberOfPayments) - 1}x
           </p>
         </div>
@@ -171,7 +174,7 @@ export async function GET(request: Request) {
   </p>
 </div>
 <div tw="flex absolute bottom-[0] right-[0] w-[35] justify-center items-center">
-  <p tw="text-[33px] text-xl font-bold" style={{  }}>
+  <p tw="text-[33px] text-xl font-bold text-white" style={{  }}>
     {code}
   </p>
 </div>

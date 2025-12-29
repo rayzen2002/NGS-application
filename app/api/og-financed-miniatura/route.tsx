@@ -16,10 +16,11 @@ const calculateTotal = (dueToday: string, fee: string, monthly: string, payments
 };
 
 // Função para renderizar as opções de imagem baseadas em financiado e idioma
-const getImageSrc = (isFinanciado: boolean, language: string) => {
+const getImageSrc = (isFinanciado: boolean, language: string, salesTeam: string) => {
   // const imgType = isFinanciado ? '2ops' : '3ops';
   const langSuffix = language === 'Português' ? 'pt' : 'es';
-  return `${IMG_BASE_URL}proposta-miniatura-${langSuffix}-2ops.png`;
+  const teamSuffix = salesTeam === 'Time Jessica' ? 'a' : 'b'
+  return `${IMG_BASE_URL}proposta-miniatura-${langSuffix}-2ops-${teamSuffix}.png`;
 };
 
 export async function GET(request: Request) {
@@ -56,7 +57,7 @@ export async function GET(request: Request) {
   
     const code = backofficerNameInitial + salesTeamNameInitial + day + month + year + hour
     // Gerar a imagem correta com base no financiamento e idioma
-    const imageSrc = getImageSrc(isFinanciado, language);
+    const imageSrc = getImageSrc(isFinanciado, language, sellerTeamName);
     // const font = await fontData
 
     return new ImageResponse(
@@ -100,7 +101,7 @@ export async function GET(request: Request) {
           </div>
 
 <div tw="flex absolute top-[132] right-[248] w-[40] justify-center items-center">
-  <p tw="text-[33px] text-white text-4xl font-bold">
+  <p tw="text-[33px] text-black text-4xl font-bold">
     {parseInt(numberOfPayments) - 1}x
   </p>
 </div>
