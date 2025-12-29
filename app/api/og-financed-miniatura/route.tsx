@@ -18,7 +18,7 @@ const calculateTotal = (dueToday: string, fee: string, monthly: string, payments
 
 // Função para renderizar as opções de imagem baseadas em financiado e idioma
 const getImageSrc = (isFinanciado: boolean, language: string, salesTeam: string) => {
-  const imgType = isFinanciado ? '2ops' : '3ops';
+  const imgType = isFinanciado ? '3ops' : '2ops';
   const langSuffix = language === 'Português' ? 'pt' : 'es';
   const teamSuffix = salesTeam === 'Time Jessica' ? 'a' : 'b'
   return `${IMG_BASE_URL}proposta-miniatura-${langSuffix}-${imgType}-${teamSuffix}.png`;
