@@ -49,14 +49,25 @@ export async function GET(request: Request) {
 
     const backofficerNameInitial = backofficerName.slice(0, 2)
     const salesTeamNameInitial = sellerTeamName.charAt(5) 
-    const now = new Date()
+  const now = new Date(
+  new Date().toLocaleString('pt-BR', {
+    timeZone: 'America/Sao_Paulo',
+  })
+)
 
-    const day = String(now.getDate()).padStart(2, '0')
-    const month = String(now.getMonth() + 1).padStart(2, '0')
-    const year = String(now.getFullYear()).slice(-2)
-    const hour = String(now.getHours()).padStart(2, '0')
-  
-    const code = backofficerNameInitial + salesTeamNameInitial + day + month + year + hour
+const day = String(now.getDate()).padStart(2, '0')
+const month = String(now.getMonth() + 1).padStart(2, '0')
+const year = String(now.getFullYear()).slice(-2)
+const hour = String(now.getHours()).padStart(2, '0')
+
+// Código final
+const code =
+  backofficerNameInitial +
+  salesTeamNameInitial +
+  day +
+  month +
+  year +
+  hour
     // Gerar a imagem correta com base no financiamento e idioma
     const imageSrc = getImageSrc(isFinanciado, language, sellerTeamName);
     // const font = await fontData
