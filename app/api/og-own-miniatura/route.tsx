@@ -18,6 +18,36 @@ const truncateValue = (value : number) => {
   return (value) > 99999 ? Math.ceil((value)) : (value).toFixed(2);
 };
 
+function getHoraBrasil() {
+    const agora = new Date();
+    
+    // Usa Intl.DateTimeFormat - mais confiável que toLocaleString
+    const formatter = new Intl.DateTimeFormat('pt-BR', {
+        timeZone: 'America/Sao_Paulo',
+        year: 'numeric',
+        month: '2-digit',
+        day: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+        hour12: false
+    });
+    
+    const formatado = formatter.format(agora);
+    // Resultado: "29/12/2024 14:30:00"
+    
+    const [dataParte, horaParte] = formatado.split(' ');
+    const [dia, mes, ano] = dataParte.split('/');
+    const [hora] = horaParte.split(':');
+    
+    return {
+        dia: dia.padStart(2, '0'),
+        mes: mes.padStart(2, '0'),
+        ano: ano.slice(-2),
+        hora: hora.padStart(2, '0')
+    };
+}
+
 // Função para renderizar as opções de imagem baseadas em financiado e idioma
 const getImageSrc = (isFinanciado: boolean, language: string, salesTeam: string) => {
   const imgType = isFinanciado ? '2ops' : '3ops';
@@ -52,25 +82,12 @@ export async function GET(request: Request) {
     const backofficerNameInitial = backofficerName.slice(0, 2)
 
     const salesTeamNameInitial = sellerTeamName.charAt(5) 
-    const now = new Date(
-  new Date().toLocaleString('pt-BR', {
-    timeZone: 'America/Sao_Paulo',
-  })
-)
+  
 
-const day = String(now.getDate()).padStart(2, '0')
-const month = String(now.getMonth() + 1).padStart(2, '0')
-const year = String(now.getFullYear()).slice(-2)
-const hour = String(now.getHours()).padStart(2, '0')
-
-// Código final
-const code =
-  backofficerNameInitial +
-  salesTeamNameInitial +
-  day +
-  month +
-  year +
-  hour
+  
+  
+    const { dia, mes, ano, hora } = getHoraBrasil();
+const code = backofficerNameInitial + salesTeamNameInitial + dia + mes + ano + hora;
 
     // Gerar a imagem correta com base no financiamento e idioma
     const imageSrc = getImageSrc(isFinanciado, language, sellerTeamName);
