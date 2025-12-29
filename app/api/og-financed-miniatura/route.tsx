@@ -140,7 +140,8 @@ export async function GET(request: Request) {
   </p>
 </div>
 <div tw="flex absolute bottom-[0] right-[0] w-[35] justify-center items-center">
-  <p tw="text-[33px] text-xl font-bold" style={{  }}>
+  <p tw="text-[33px] text-xl font-bold text-white" style={{  }}>
+    
     {code}
   </p>
 </div>
