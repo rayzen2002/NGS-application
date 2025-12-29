@@ -145,8 +145,9 @@ export async function GET(request: Request) {
   </p>
 </div>
 <div tw="flex absolute bottom-[0] right-[20] justify-center items-center">
-  <p tw="text-xl text-white" style={{
+   <p tw="text-xl text-white" style={{
     textShadow: '0 2px 4px rgba(0,0,0,0.7)',
+    color: '#92cfe7ff',
   }}>
     
     {code}
