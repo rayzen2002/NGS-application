@@ -88,6 +88,7 @@ export async function GET(request: Request) {
   src={imageSrc}
   width={1920}
   height={1080}
+  
 />
 
 
@@ -194,6 +195,9 @@ export async function GET(request: Request) {
       {
         width: 1920,
         height: 1080,  
+        headers: {
+      'Cache-Control': 'no-store, max-age=0',
+    },
    
       }
     );

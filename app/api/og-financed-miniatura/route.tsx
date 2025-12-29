@@ -1,4 +1,5 @@
 import { ImageResponse } from 'next/og';
+export const revalidate = 0
 
 export const runtime = 'edge';
 
@@ -70,6 +71,7 @@ export async function GET(request: Request) {
             alignItems: 'center',
             justifyContent: 'center',
           }}
+          
         >
       <div
   tw="flex"
@@ -159,6 +161,9 @@ export async function GET(request: Request) {
       {
         width: 1920,
         height: 1080,  
+        headers: {
+      'Cache-Control': 'no-store, max-age=0',
+    },
    
       }
     );
