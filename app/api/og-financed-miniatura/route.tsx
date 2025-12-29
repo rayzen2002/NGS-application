@@ -59,7 +59,6 @@ export async function GET(request: Request) {
     // Gerar a imagem correta com base no financiamento e idioma
     const imageSrc = getImageSrc(isFinanciado, language, sellerTeamName);
     // const font = await fontData
-
     return new ImageResponse(
       (
         <div
@@ -148,6 +147,7 @@ export async function GET(request: Request) {
    <p tw="text-xl text-white" style={{
     textShadow: '0 2px 4px rgba(0,0,0,0.7)',
     color: '#92cfe7ff',
+    backgroundColor: 'rgba(66, 24, 218, 0.5)'
   }}>
     
     {code}
