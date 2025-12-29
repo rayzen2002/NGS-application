@@ -46,7 +46,7 @@ export async function GET(request: Request) {
     const backofficerName = searchParams.get('backofficer') || 'null'
     const sellerTeamName = searchParams.get('salesTeam') || 'null'
 
-    const backofficerNameInitial = backofficerName.charAt(0) 
+    const backofficerNameInitial = backofficerName.slice(0, 2)
     const salesTeamNameInitial = sellerTeamName.charAt(5) 
     const now = new Date()
 
@@ -144,8 +144,10 @@ export async function GET(request: Request) {
     ${calculateTotal(optionCDueToday, fee, optionCMonthly, numberOfPayments)}
   </p>
 </div>
-<div tw="flex absolute bottom-[0] right-[0] w-[35] justify-center items-center">
-  <p tw="text-[33px] text-xl font-bold text-white" style={{  }}>
+<div tw="flex absolute bottom-[0] right-[20] justify-center items-center">
+  <p tw="text-xl text-white" style={{
+    textShadow: '0 2px 4px rgba(0,0,0,0.7)',
+  }}>
     
     {code}
   </p>
