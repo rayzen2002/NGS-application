@@ -9,7 +9,7 @@ import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, Legend } fro
 export function MetricsChart({ data }: { data: Metric[] }) {
   return (
     <div className="w-full h-[400px]  p-4 rounded-xl shadow-md">
-      <h2 className="text-xl font-semibold mb-4">Performance dos Backofficers</h2>
+      <h2 className="text-xl font-semibold mb-4">Performance</h2>
       <ResponsiveContainer width="100%" height="100%">
         <BarChart data={data}>
           <XAxis dataKey="sellerName" />
