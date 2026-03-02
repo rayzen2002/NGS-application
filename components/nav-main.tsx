@@ -51,6 +51,11 @@ export function NavMain() {
       url: "/admin/sellers",
       iconName: "users",
     },
+   {
+      title: "Auditoria",
+      url: "/admin/auditoria",
+      iconName: "user-pen",
+    },
   ]
 
   const renderIcon = (iconName: string) => {

@@ -38,6 +38,8 @@ export async function middleware(request: NextRequest) {
           return NextResponse.redirect(new URL("/admin/dashboard", request.url));
         } else if (userRole === "backofficer") {
           return NextResponse.redirect(new URL("/backofficer", request.url));
+        } else if (userRole === "seller") {
+          return NextResponse.redirect(new URL("/sellers", request.url));
         } else {
           return NextResponse.redirect(new URL("/user/dashboard", request.url));
         }

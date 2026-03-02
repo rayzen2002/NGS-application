@@ -6,7 +6,7 @@ import { jwtVerify } from "jose";
 
 type JWTPayload = {
   username: string;
-  role: "admin" | "backofficer" | "user";
+  role: "admin" | "backofficer" | "user" | "seller";
 };
 
 export default async function Home() {
@@ -20,12 +20,16 @@ export default async function Home() {
       const { payload } = await jwtVerify<JWTPayload>(token, secret);
 
       // redireciona baseado na role do token
-      if (payload.role === "admin") {
+      console.log(payload)
+      console.log(token)
+     if (payload.role === "admin") {
         redirect("/admin/dashboard");
       } else if (payload.role === "backofficer") {
         redirect("/backofficer");
+      } else if (payload.role === "seller") {
+        redirect("/sellers");
       } else {
-        redirect("/user/dashboard");
+        redirect("/");
       }
     } catch (err) {
       console.error("Token inválido no servidor:", err);

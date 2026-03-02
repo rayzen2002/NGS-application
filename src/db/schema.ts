@@ -42,3 +42,11 @@ export const dealersTable = pgTable("dealers", {
   zelle: varchar({ length: 255 }), 
 });
 
+export const sellersReports = pgTable("sellers_reports", {
+  id: integer().primaryKey().generatedAlwaysAsIdentity(),
+  seller_id: integer().notNull().references(() => usersTable.id, { onDelete: "cascade" }),
+  started_at: timestamp().notNull(),
+  activity_type: activityTypeEnum(),
+  customer: varchar({ length: 255 }).notNull(),
+  additional_info: varchar({ length: 1000 }), 
+});
