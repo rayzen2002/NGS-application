@@ -79,7 +79,7 @@ export function ProposalForm() {
       optionAMonthly: 0,
       optionBMonthly: 0,
       optionCMonthly: 0,
-      fee: 260, // Default fee value set to 250
+      fee: 275, // Default fee value set to 250
       paymentOptions: '6',
       isFinanced: true, // Default to "Financiado"
       language: 'Português',
