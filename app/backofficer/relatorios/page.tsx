@@ -6,7 +6,7 @@ import Cookies from "js-cookie";
 import {jwtDecode} from "jwt-decode";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
-import { exportarExcel } from "./exportar-excel";
+import { exportarExcel, exportarExcelFechamentosDia } from "./exportar-excel";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -171,6 +171,7 @@ export default function RelatorioForm() {
         toast("Relatório enviado com sucesso!");
 
         await exportarExcel(payload, backofficerName || "Desconhecido");
+        await exportarExcelFechamentosDia(payload, backofficerName || "Desconhecido");
 
         setRelatorios([
           {
@@ -395,4 +396,3 @@ export default function RelatorioForm() {
     </div>
   );
 }
-

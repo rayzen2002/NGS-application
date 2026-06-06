@@ -25,7 +25,6 @@ export const exportarExcel = async (
   dados: Dado[],
   backofficeName: string
 ): Promise<void> => {
-  console.log(dados)
   const vendedoresMap = await getVendedores();
 
   const headers = [
@@ -88,8 +87,86 @@ export const exportarExcel = async (
   saveAs(blob, fileName);
 };
 
+export const exportarExcelFechamentosDia = async (
+  dados: Dado[],
+  backofficeName: string
+): Promise<void> => {
+  const vendedoresMap = await getVendedores();
+  const dataHoje = dayjs().format('DD/MM/YYYY');
+  const fechamentosDoDia = dados.filter((dado) => {
+    const dataInicio = dayjs(dado.started_at as string, 'DD/MM/YYYY HH:mm', true);
+
+    return (
+      String(dado.activity_type || '').toLowerCase() === 'fechamento' &&
+      dataInicio.isValid() &&
+      dataInicio.format('DD/MM/YYYY') === dataHoje
+    );
+  });
+
+  const headers = [
+    { key: 'BACKOFFICER', width: 20 },
+    { key: 'DATA', width: 15 },
+    { key: 'NÚMERO DA APÓLICE', width: 25 },
+    { key: 'CLIENTE', width: 60 },
+    { key: 'VENDEDOR', width: 40 },
+    { key: 'INÍCIO', width: 15 },
+    { key: 'TÉRMINO', width: 15 },
+    { key: 'OBSERVAÇÃO', width: 30 }
+  ];
+
+  const workbook = new ExcelJS.Workbook();
+  const worksheet = workbook.addWorksheet('Fechamentos do Dia');
+
+  worksheet.columns = headers.map(({ key, width }) => ({
+    header: key,
+    key,
+    width
+  }));
+
+  fechamentosDoDia.forEach((dado) => {
+    const linha = {
+      'BACKOFFICER': backofficeName.toUpperCase(),
+      'DATA': formatarData(dado.started_at as string),
+      'NÚMERO DA APÓLICE': '',
+      'CLIENTE': String(dado.customer || '').toUpperCase(),
+      'VENDEDOR': vendedoresMap[String(dado.seller_id)] || 'Desconhecido',
+      'INÍCIO': formatarHora(dado.started_at as string),
+      'TÉRMINO': formatarHora(dado.finished_at as string),
+      'OBSERVAÇÃO': String(dado.additional_info || '').toUpperCase()
+    };
+    worksheet.addRow(linha);
+  });
+
+  worksheet.getRow(1).eachCell((cell) => {
+    cell.font = { bold: true, color: { argb: 'FFFFFFFF' } };
+    cell.fill = {
+      type: 'pattern',
+      pattern: 'solid',
+      fgColor: { argb: 'FF70AD47' },
+    };
+    cell.alignment = { horizontal: 'center', vertical: 'middle' };
+  });
+
+  worksheet.eachRow((row) => {
+    row.eachCell((cell) => {
+      cell.alignment = { horizontal: 'center', vertical: 'middle' };
+    });
+  });
+
+  const buffer = await workbook.xlsx.writeBuffer();
+  const dataArquivo = dayjs().format('DD-MM-YYYY');
+  const blob = new Blob([buffer], { type: 'application/octet-stream' });
+  const fileName = `Fechamentos - ${backofficeName} - ${dataArquivo}.xlsx`;
+  saveAs(blob, fileName);
+};
+
 // Função auxiliar para formatar hora
 function formatarHora(dataOriginal: string): string {
   const data = dayjs(dataOriginal, 'DD/MM/YYYY HH:mm', true);
   return data.isValid() ? data.format('HH:mm') : 'Data Inválida';
+}
+
+function formatarData(dataOriginal: string): string {
+  const data = dayjs(dataOriginal, 'DD/MM/YYYY HH:mm', true);
+  return data.isValid() ? data.format('DD/MM/YYYY') : 'Data Inválida';
 }
