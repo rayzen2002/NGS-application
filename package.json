@@ -3,7 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "npm run services:up && next dev --turbopack",
+    "dev": "next dev",
+    "dev:services": "npm run services:up && next dev",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
