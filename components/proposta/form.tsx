@@ -13,6 +13,18 @@ import { Input } from '@/components/ui/input';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form';
 import CurrencyInput from '../ui/currency-input';
 import { Button } from '../ui/button';
+import {
+  BadgeDollarSign,
+  Car,
+  CreditCard,
+  FileText,
+  Languages,
+  MapPin,
+  RotateCcw,
+  Send,
+  Users,
+  UserRound,
+} from 'lucide-react';
 
 
 
@@ -35,7 +47,10 @@ const formSchema = z.object({
   optionBMonthly: z.coerce.number(),
   optionCMonthly: z.coerce.number(),
   fee: z.coerce.number().optional(), // Fee is optional
+  hasDebit: z.boolean(),
+  debitValue: z.coerce.number().optional(),
   paymentOptions: z.enum(['3', '5', '6', '11']),
+  customPaymentOptions: z.union([z.literal(''), z.coerce.number().int().min(2)]).optional(),
   isFinanced: z.boolean(),
   language: z.enum(['Português', 'Espanhol']),
   salesTeam: z.enum(['Time Jessica' , 'Time Nathalia'], {
@@ -80,7 +95,10 @@ export function ProposalForm() {
       optionBMonthly: 0,
       optionCMonthly: 0,
       fee: 275, // Default fee value set to 250
+      hasDebit: false,
+      debitValue: 0,
       paymentOptions: '6',
+      customPaymentOptions: '',
       isFinanced: true, // Default to "Financiado"
       language: 'Português',
       salesTeam: 'Time Jessica'
@@ -95,8 +113,16 @@ export function ProposalForm() {
     name: 'isFinanced',
   });
 
+  const hasDebit = useWatch({
+    control: form.control,
+    name: 'hasDebit',
+  });
+
   async function onSubmit(values: z.infer<typeof formSchema>) {
-    const fee = values.fee ?? 250;
+    const fee = (values.fee ?? 250) + (values.hasDebit ? values.debitValue ?? 0 : 0);
+    const paymentOptions = typeof values.customPaymentOptions === 'number'
+      ? values.customPaymentOptions.toString()
+      : values.paymentOptions;
     const paramsObj: Record<string, string> = {
       customersNames: values.customersNames,
       vehicles: values.vehicles,
@@ -107,7 +133,7 @@ export function ProposalForm() {
       optionBMonthly: values.optionBMonthly.toString(),
       optionCMonthly: values.optionCMonthly.toString(),
       fee: fee.toString(),
-      paymentOptions: values.paymentOptions,
+      paymentOptions,
       isFinanced: values.isFinanced.toString(),
       language: values.language,
       salesTeam: values.salesTeam,
@@ -131,114 +157,94 @@ export function ProposalForm() {
   // const isLoading = loadingSeguradoras || loadingVendedores;
 
   return (
-    <div className="flex flex-col mt-12 items-center justify-center space-y-8 w-[100%]">
+    <div className="mx-auto w-full max-w-2xl px-3 py-6 sm:px-4">
       <Form {...form}>
         <form
           onSubmit={form.handleSubmit(onSubmit)}
-          className="space-y-8 p-8 border rounded-md shadow-lg w-[100%] max-w-lg"
+          className="overflow-hidden rounded-md border bg-background shadow-sm"
         >
-          {/* Group 1: Informações da cotação */}
-          <div className="border p-4 rounded-md relative w-[100%]">
-          <span className="text-xl font-medium">
-                Informações da cotação      
-              </span>
-            <div className="absolute  left-3 px-1   ">
+          <div className="border-b bg-muted/30 px-4 py-4 sm:px-5">
+            <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
+                  <FileText className="size-4" />
+                </div>
+                <div>
+                  <h1 className="text-lg font-semibold leading-tight">Gerar proposta</h1>
+                  <p className="text-sm text-muted-foreground">Backofficer: {userName || '-'}</p>
+                </div>
+              </div>
 
-            </div>
-            <div className="space-y-4 mt-2">
               <FormField
                 control={form.control}
-                name="customersNames"
+                name="isFinanced"
                 render={({ field }: any) => (
                   <FormItem>
-                    <FormLabel className="text-base text-left">
-                      Nome do cliente
-                    </FormLabel>
                     <FormControl>
-                      <Input
-                        placeholder="Nome do cliente..."
-                        {...field}
-                        onChange={(e) => {
-                          const uppercasedValue = e.target.value.toUpperCase();
-                          field.onChange(uppercasedValue);
-                        }}
-                        value={field.value}
-                      />
+                      <div className="grid grid-cols-2 rounded-md border bg-background p-1">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 border transition-all hover:shadow-sm ${
+                            field.value
+                              ? 'border-blue-600 bg-blue-600 text-white shadow-sm hover:bg-blue-700 hover:text-white'
+                              : 'border-transparent text-muted-foreground hover:bg-blue-50 hover:text-blue-700 dark:hover:bg-blue-950/40'
+                          }`}
+                          onClick={() => field.onChange(true)}
+                        >
+                          Financiado
+                        </Button>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 border transition-all hover:shadow-sm ${
+                            !field.value
+                              ? 'border-emerald-600 bg-emerald-600 text-white shadow-sm hover:bg-emerald-700 hover:text-white'
+                              : 'border-transparent text-muted-foreground hover:bg-emerald-50 hover:text-emerald-700 dark:hover:bg-emerald-950/40'
+                          }`}
+                          onClick={() => field.onChange(false)}
+                        >
+                          Quitado
+                        </Button>
+                      </div>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-                control={form.control}
-                name="vehicles"
-                render={({ field }: any) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-left">
-                      Veículos
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Veículos do cliente..."
-                        {...field}
-                        onChange={(e) => {
-                          const uppercasedValue = e.target.value.toUpperCase();
-                          field.onChange(uppercasedValue);
-                        }}
-                        value={field.value}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="address"
-                render={({ field }: any) => (
-                  <FormItem>
-                    <FormLabel className="text-base text-left">
-                      Endereço
-                    </FormLabel>
-                    <FormControl>
-                      <Input
-                        placeholder="Endereço do cliente..."
-                        {...field}
-                        onChange={(e) => {
-                          const uppercasedValue = e.target.value.toUpperCase();
-                          field.onChange(uppercasedValue);
-                        }}
-                        value={field.value}
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-             
             </div>
           </div>
 
-          {/* Group 2: Valores */}
-          <div className="border p-4 rounded-md relative">
-          <span className="text-xl font-medium">Valores</span>
-            <div className="absolute -top-4 left-3 px-1 bg-white dark:bg-gray-900">
+          <div className="space-y-5 p-4 sm:p-5">
+            <section className="space-y-4 rounded-md border p-4">
+              <div className="flex items-center gap-2">
+                <UserRound className="size-4 text-muted-foreground" />
+                <h2 className="text-base font-semibold">Informações da cotação</h2>
+              </div>
 
-            </div>
-            <div className="space-y-4 mt-2">
-              <div className="flex items-center gap-4">
+              <div className="grid gap-4 sm:grid-cols-2">
                 <FormField
                   control={form.control}
-                  name="fee"
+                  name="customersNames"
                   render={({ field }: any) => (
                     <FormItem>
-                      <FormLabel className="text-base text-left">Fee</FormLabel>
+                      <FormLabel>Nome do cliente</FormLabel>
                       <FormControl>
-                        <CurrencyInput
-                          value={field.value || 250}
-                          onChange={field.onChange}
-                          placeholder="Valor do Fee..."
-                        />
+                        <div className="relative">
+                          <UserRound className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder="Nome do cliente"
+                            className="pl-9"
+                            {...field}
+                            onChange={(e) => {
+                              const uppercasedValue = e.target.value.toUpperCase();
+                              field.onChange(uppercasedValue);
+                            }}
+                            value={field.value}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
@@ -247,57 +253,250 @@ export function ProposalForm() {
 
                 <FormField
                   control={form.control}
-                  name="paymentOptions"
+                  name="vehicles"
                   render={({ field }: any) => (
                     <FormItem>
-                      <FormLabel className="text-base text-left">
-                        Quantidade de pagamentos
-                      </FormLabel>
+                      <FormLabel>Veículos</FormLabel>
                       <FormControl>
-                        <select
-                          {...field}
-                          className="border p-2 rounded-md w-full text-base dark:bg-inherit"
-                        >
-                          <option value="3" className="dark:text-black">
-                            3
-                          </option>
-                          <option value="5" className="dark:text-black">
-                            5
-                          </option>
-                          <option value="6" className="dark:text-black">
-                            6
-                          </option>
-                          <option value="11" className="dark:text-black">
-                            11
-                          </option>
-                        </select>
+                        <div className="relative">
+                          <Car className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder="Veículos do cliente"
+                            className="pl-9"
+                            {...field}
+                            onChange={(e) => {
+                              const uppercasedValue = e.target.value.toUpperCase();
+                              field.onChange(uppercasedValue);
+                            }}
+                            value={field.value}
+                          />
+                        </div>
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+
+                <FormField
+                  control={form.control}
+                  name="address"
+                  render={({ field }: any) => (
+                    <FormItem className="sm:col-span-2">
+                      <FormLabel>Endereço</FormLabel>
+                      <FormControl>
+                        <div className="relative">
+                          <MapPin className="pointer-events-none absolute left-3 top-1/2 size-4 -translate-y-1/2 text-muted-foreground" />
+                          <Input
+                            placeholder="Endereço do cliente"
+                            className="pl-9"
+                            {...field}
+                            onChange={(e) => {
+                              const uppercasedValue = e.target.value.toUpperCase();
+                              field.onChange(uppercasedValue);
+                            }}
+                            value={field.value}
+                          />
+                        </div>
                       </FormControl>
                       <FormMessage />
                     </FormItem>
                   )}
                 />
               </div>
+            </section>
 
-              {/* Option A: Liability - Only show if not Financiado */}
-              {!isFinanciado && (
-                <div className="text-left">
-                  <div className="flex items-center my-2">
-                    <hr className="flex-grow border-t-2 border-green-500" />
-                    <span className="mx-2 text-green-500 font-semibold">
-                      Liability
+            <section className="space-y-4 rounded-md border p-4">
+              <div className="flex items-center gap-2">
+                <CreditCard className="size-4 text-muted-foreground" />
+                <h2 className="text-base font-semibold">Condições de pagamento</h2>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <FormField
+                    control={form.control}
+                    name="fee"
+                    render={({ field }: any) => (
+                      <FormItem>
+                        <FormLabel>Fee</FormLabel>
+                        <FormControl>
+                          <CurrencyInput
+                            value={field.value || 250}
+                            onChange={field.onChange}
+                            placeholder="Valor do Fee"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="paymentOptions"
+                    render={({ field }: any) => (
+                      <FormItem>
+                        <FormLabel>Pagamentos</FormLabel>
+                        <FormControl>
+                          <select
+                            {...field}
+                            onChange={(event) => {
+                              field.onChange(event);
+                              form.setValue('customPaymentOptions', '');
+                            }}
+                            className="border-input bg-background text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border px-3 text-sm outline-none transition-[color,box-shadow] focus-visible:ring-[3px] dark:bg-input/30 dark:text-foreground"
+                          >
+                            <option value="3" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">3</option>
+                            <option value="5" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">5</option>
+                            <option value="6" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">6</option>
+                            <option value="11" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">11</option>
+                          </select>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="customPaymentOptions"
+                    render={({ field }: any) => (
+                      <FormItem>
+                        <FormLabel>Customizada</FormLabel>
+                        <FormControl>
+                          <Input
+                            type="number"
+                            min={2}
+                            step={1}
+                            placeholder="Qtd."
+                            {...field}
+                            value={field.value}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+
+                  <FormField
+                    control={form.control}
+                    name="hasDebit"
+                    render={({ field }: any) => (
+                      <FormItem>
+                        <FormLabel>Débito</FormLabel>
+                        <FormControl>
+                          <label className="flex h-9 cursor-pointer items-center rounded-md border px-3 shadow-xs transition-colors hover:bg-muted/50">
+                            <Checkbox
+                              checked={field.value}
+                              onCheckedChange={(checked) => {
+                                field.onChange(Boolean(checked));
+
+                                if (!checked) {
+                                  form.setValue('debitValue', 0);
+                                }
+                              }}
+                            />
+                            <span className="ml-2 text-sm font-medium">Adicionar</span>
+                          </label>
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
+
+                {hasDebit && (
+                  <FormField
+                    control={form.control}
+                    name="debitValue"
+                    render={({ field }: any) => (
+                      <FormItem>
+                        <FormLabel>Valor do débito</FormLabel>
+                        <FormControl>
+                          <CurrencyInput
+                            value={field.value || 0}
+                            onChange={field.onChange}
+                            placeholder="Valor do débito"
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                )}
+              </div>
+            </section>
+
+            <section className="space-y-4 rounded-md border p-4">
+              <div className="flex items-center gap-2">
+                <BadgeDollarSign className="size-4 text-muted-foreground" />
+                <h2 className="text-base font-semibold">Valores</h2>
+              </div>
+
+              <div className="grid gap-4">
+                {!isFinanciado && (
+                  <div className="rounded-md border border-l-4 border-l-emerald-500 bg-muted/20 p-4">
+                    <div className="mb-4 flex items-center justify-between gap-3">
+                      <h3 className="font-semibold text-emerald-700 dark:text-emerald-400">Liability</h3>
+                      <span className="rounded-md bg-emerald-500/10 px-2 py-1 text-xs font-medium text-emerald-700 dark:text-emerald-400">
+                        Quitado
+                      </span>
+                    </div>
+
+                    <div className="grid gap-3 sm:grid-cols-2">
+                      <FormField
+                        control={form.control}
+                        name="optionADueToday"
+                        render={({ field }: any) => (
+                          <FormItem>
+                            <FormLabel>Entrada</FormLabel>
+                            <FormControl>
+                              <CurrencyInput
+                                value={field.value || 0}
+                                onChange={field.onChange}
+                                placeholder="Valor a pagar hoje"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                      <FormField
+                        control={form.control}
+                        name="optionAMonthly"
+                        render={({ field }: any) => (
+                          <FormItem>
+                            <FormLabel>Mensal</FormLabel>
+                            <FormControl>
+                              <CurrencyInput
+                                value={field.value || 0}
+                                onChange={field.onChange}
+                                placeholder="Valor mensal"
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                <div className="rounded-md border border-l-4 border-l-blue-500 bg-muted/20 p-4">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="font-semibold text-blue-700 dark:text-blue-400">Full Coverage</h3>
+                    <span className="rounded-md bg-blue-500/10 px-2 py-1 text-xs font-medium text-blue-700 dark:text-blue-400">
+                      Opção B
                     </span>
-                    <hr className="flex-grow border-t-2 border-green-500" />
                   </div>
 
-                  <div className="flex gap-4">
+                  <div className="grid gap-3 sm:grid-cols-2">
                     <FormField
                       control={form.control}
-                      name="optionADueToday"
+                      name="optionBDueToday"
                       render={({ field }: any) => (
                         <FormItem>
-                          <FormLabel className="text-base text-left">
-                            Entrada
-                          </FormLabel>
+                          <FormLabel>Entrada</FormLabel>
                           <FormControl>
                             <CurrencyInput
                               value={field.value || 0}
@@ -311,12 +510,10 @@ export function ProposalForm() {
                     />
                     <FormField
                       control={form.control}
-                      name="optionAMonthly"
+                      name="optionBMonthly"
                       render={({ field }: any) => (
                         <FormItem>
-                          <FormLabel className="text-base text-left">
-                            Mensal
-                          </FormLabel>
+                          <FormLabel>Mensal</FormLabel>
                           <FormControl>
                             <CurrencyInput
                               value={field.value || 0}
@@ -330,209 +527,121 @@ export function ProposalForm() {
                     />
                   </div>
                 </div>
-              )}
 
-              {/* Option B: Full Coverage */}
-              <div className="text-left">
-                <div className="flex items-center my-2">
-                  <hr className="flex-grow border-t-2 border-blue-500" />
-                  <span className="mx-2 text-blue-500 font-semibold">
-                    Full Coverage
-                  </span>
-                  <hr className="flex-grow border-t-2 border-blue-500" />
-                </div>
+                <div className="rounded-md border border-l-4 border-l-red-500 bg-muted/20 p-4">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <h3 className="font-semibold text-red-700 dark:text-red-400">Full Coverage + Reboque</h3>
+                    <span className="rounded-md bg-red-500/10 px-2 py-1 text-xs font-medium text-red-700 dark:text-red-400">
+                      Opção C
+                    </span>
+                  </div>
 
-                <div className="flex gap-4">
-                  <FormField
-                    control={form.control}
-                    name="optionBDueToday"
-                    render={({ field }: any) => (
-                      <FormItem>
-                        <FormLabel className="text-base text-left">
-                          Entrada
-                        </FormLabel>
-                        <FormControl>
-                          <CurrencyInput
-                            value={field.value || 0}
-                            onChange={field.onChange}
-                            placeholder="Valor a pagar hoje"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="optionBMonthly"
-                    render={({ field }: any) => (
-                      <FormItem>
-                        <FormLabel className="text-base text-left">
-                          Mensal
-                        </FormLabel>
-                        <FormControl>
-                          <CurrencyInput
-                            value={field.value || 0}
-                            onChange={field.onChange}
-                            placeholder="Valor mensal"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
+                  <div className="grid gap-3 sm:grid-cols-2">
+                    <FormField
+                      control={form.control}
+                      name="optionCDueToday"
+                      render={({ field }: any) => (
+                        <FormItem>
+                          <FormLabel>Entrada</FormLabel>
+                          <FormControl>
+                            <CurrencyInput
+                              value={field.value || 0}
+                              onChange={field.onChange}
+                              placeholder="Valor a pagar hoje"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                    <FormField
+                      control={form.control}
+                      name="optionCMonthly"
+                      render={({ field }: any) => (
+                        <FormItem>
+                          <FormLabel>Mensal</FormLabel>
+                          <FormControl>
+                            <CurrencyInput
+                              value={field.value || 0}
+                              onChange={field.onChange}
+                              placeholder="Valor mensal"
+                            />
+                          </FormControl>
+                          <FormMessage />
+                        </FormItem>
+                      )}
+                    />
+                  </div>
                 </div>
               </div>
+            </section>
 
-              {/* Option C: Full Coverage + Reboque */}
-              <div className="text-left">
-                <div className="flex items-center my-2">
-                  <hr className="flex-grow border-t-2 border-red-500" />
-                  <span className="mx-2 text-red-500 font-semibold">
-                    Full Coverage + Reboque
-                  </span>
-                  <hr className="flex-grow border-t-2 border-red-500" />
-                </div>
-                <div className="flex gap-4">
-                  <FormField
-                    control={form.control}
-                    name="optionCDueToday"
-                    render={({ field }: any) => (
-                      <FormItem>
-                        <FormLabel className="text-base text-left">
-                          Entrada
-                        </FormLabel>
-                        <FormControl>
-                          <CurrencyInput
-                            value={field.value || 0}
-                            onChange={field.onChange}
-                            placeholder="Valor a pagar hoje"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                  <FormField
-                    control={form.control}
-                    name="optionCMonthly"
-                    render={({ field }: any) => (
-                      <FormItem>
-                        <FormLabel className="text-base text-left">
-                          Mensal
-                        </FormLabel>
-                        <FormControl>
-                          <CurrencyInput
-                            value={field.value || 0}
-                            onChange={field.onChange}
-                            placeholder="Valor mensal"
-                          />
-                        </FormControl>
-                        <FormMessage />
-                      </FormItem>
-                    )}
-                  />
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Language Selection Field */}
-           <FormField
+            <section className="grid gap-4 rounded-md border p-4 sm:grid-cols-2">
+              <FormField
                 control={form.control}
-                name="isFinanced"
+                name="salesTeam"
                 render={({ field }: any) => (
                   <FormItem>
-                    <FormLabel className="text-base text-left">
-                      Status do veículo
+                    <FormLabel className="flex items-center gap-2">
+                      <Users className="size-4 text-muted-foreground" />
+                      Time de vendas
                     </FormLabel>
                     <FormControl>
-                      <div className="flex items-center gap-4">
-                        <label className="flex items-center">
-                          <Checkbox
-                            checked={field.value}
-                            onCheckedChange={field.onChange}
-                          />
-                          <span className="ml-2">Financiado</span>
-                        </label>
-                        <label className="flex items-center">
-                          <Checkbox
-                            checked={!field.value}
-                            onCheckedChange={() => field.onChange(false)}
-                          />
-                          <span className="ml-2">Quitado</span>
-                        </label>
-                      </div>
+                      <select
+                        {...field}
+                        className="border-input bg-background text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border px-3 text-sm outline-none transition-[color,box-shadow] focus-visible:ring-[3px] dark:bg-input/30 dark:text-foreground"
+                      >
+                        <option value="Time Jessica" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">Time Jessica</option>
+                        <option value="Time Nathalia" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">Time Nathalia</option>
+                      </select>
                     </FormControl>
                     <FormMessage />
                   </FormItem>
                 )}
               />
-              <FormField
-  control={form.control}
-  name="salesTeam"
-  render={({ field }: any) => (
-    <FormItem>
-      <FormLabel className="text-base text-left">
-        Time de vendas
-      </FormLabel>
-      <FormControl>
-        <select
-          {...field}
-          className="border p-2 rounded-md w-full text-base dark:bg-inherit"
-        >
-          <option value="Time Jessica" className="dark:text-black">
-            Time Jessica
-          </option>
-          <option value="Time Nathalia" className="dark:text-black">
-            Time Nathalia
-          </option>
-        </select>
-      </FormControl>
-      <FormMessage />
-    </FormItem>
-  )}
-/>
-          <FormField
-            control={form.control}
-            name="language"
-            render={({ field }: any) => (
-              <FormItem>
-                <FormLabel className="text-base text-left">Idioma</FormLabel>
-                <FormControl>
-                  <select
-                    {...field}
-                    className="border p-2 rounded-md w-full dark:bg-inherit"
-                  >
-                    <option value="Português" className="dark:text-black">
-                      Português
-                    </option>
-                    <option value="Espanhol" className="dark:text-black">
-                      Espanhol
-                    </option>
-                  </select>
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
 
-          <div className="flex justify-center space-x-4 mt-4">
+              <FormField
+                control={form.control}
+                name="language"
+                render={({ field }: any) => (
+                  <FormItem>
+                    <FormLabel className="flex items-center gap-2">
+                      <Languages className="size-4 text-muted-foreground" />
+                      Idioma
+                    </FormLabel>
+                    <FormControl>
+                      <select
+                        {...field}
+                        className="border-input bg-background text-foreground shadow-xs focus-visible:border-ring focus-visible:ring-ring/50 h-9 w-full rounded-md border px-3 text-sm outline-none transition-[color,box-shadow] focus-visible:ring-[3px] dark:bg-input/30 dark:text-foreground"
+                      >
+                        <option value="Português" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">Português</option>
+                        <option value="Espanhol" className="bg-background text-foreground dark:bg-gray-950 dark:text-gray-50">Espanhol</option>
+                      </select>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            </section>
+          </div>
+
+          <div className="flex flex-col-reverse gap-3 border-t bg-muted/30 px-4 py-4 sm:flex-row sm:justify-end sm:px-5">
             <Button
-              type="submit"
-              className="w-48 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl shadow transition duration-300 disabled:opacity-50"
-              
+              type="button"
+              variant="outline"
+              className="w-full border-red-200 text-red-700 shadow-sm transition-all hover:-translate-y-0.5 hover:border-red-300 hover:bg-red-50 hover:text-red-800 hover:shadow-md dark:border-red-900/60 dark:text-red-400 dark:hover:bg-red-950/30 sm:w-auto"
+              onClick={() => form.reset()}
             >
-              {loadingRequest ? 'Aguarde...' : 'Gerar Proposta'}
+              <RotateCcw className="size-4" />
+              Resetar
             </Button>
 
             <Button
-              type="button"
-              variant="destructive"
-              className="w-48 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-xl shadow transition duration-300"
-              onClick={() => form.reset()}
+              type="submit"
+              className="w-full bg-blue-600 text-white shadow-sm transition-all hover:-translate-y-0.5 hover:bg-blue-700 hover:shadow-md sm:w-auto"
             >
-              Resetar
+              <Send className="size-4" />
+              {loadingRequest ? 'Aguarde...' : 'Gerar proposta'}
             </Button>
           </div>
         </form>
