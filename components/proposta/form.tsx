@@ -163,15 +163,15 @@ export function ProposalForm() {
           onSubmit={form.handleSubmit(onSubmit)}
           className="overflow-hidden rounded-md border bg-background shadow-sm"
         >
-          <div className="border-b bg-muted/30 px-4 py-4 sm:px-5">
+          <div className="border-b bg-gradient-to-r from-blue-50 via-background to-muted/30 px-4 py-4 dark:from-blue-950/25 dark:via-background dark:to-muted/20 sm:px-5">
             <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex items-center gap-3">
-                <div className="flex size-9 shrink-0 items-center justify-center rounded-md bg-primary text-primary-foreground">
-                  <FileText className="size-4" />
+                <div className="flex size-12 shrink-0 items-center justify-center rounded-md bg-blue-600 text-white shadow-md shadow-blue-600/20 ring-1 ring-blue-500/20">
+                  <FileText className="size-6" />
                 </div>
                 <div>
-                  <h1 className="text-lg font-semibold leading-tight">Gerar proposta</h1>
-                  <p className="text-sm text-muted-foreground">Backofficer: {userName || '-'}</p>
+                  <h1 className="text-xl font-semibold leading-tight text-foreground">Gerar proposta</h1>
+                  <p className="text-sm font-medium text-muted-foreground">Backofficer: {userName || '-'}</p>
                 </div>
               </div>
 
