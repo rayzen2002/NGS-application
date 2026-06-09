@@ -1,18 +1,18 @@
 export const lienholderList = [
   {
-    name: "SOURCE ONE FINANCIAL CORP - ENDEREÇO RTA",
+    name: "SOURCE ONE FINANCIAL CORP ",
     address: "150 GROSSMAN DR 401, BRAINTREE MA 02184",
   },
   {
-    name: "SOURCE ONE FINANCIAL CORP - ENDEREÇO BINDER",
+    name: "SOURCE ONE FINANCIAL CORP",
     address: "PO BOX 398102, MINNEAPOLIS MN 55439",
   },
   {
-    name: "LENDBUZZ FUNDING LLC - ENDEREÇO RTA",
+    name: "LENDBUZZ FUNDING LLC",
     address: "31 MILK ST LBBY #960909, BOSTON MA 02196",
   },
   {
-    name: "LENDBUZZ FUNDING LLC - ENDEREÇO BINDER",
+    name: "LENDBUZZ FUNDING LLC",
     address: "PO BOX 1976, CARMEL, IN 46082",
   },
   {
@@ -179,15 +179,15 @@ export const lienholderList = [
     name: "TOC FINANCIAL",
     address: "1771 SPRINGDALE RD, CHERRY HILL, NJ 08003",
   },
-   {
+  {
     name: "STELLANTIS FINANCIAL SERVICES",
     address: "PO BOX 205749, DALLAS, TX 75320",
   },
-   {
+  {
     name: "FOURSIGHT CAPITAL",
     address: " PO BOX 45026, SALT LAKE CITY, UT 84145",
   },
-   {
+  {
     name: "SENSIBLE AUTO LENDING LLC",
     address: "P.O. BOX 421669  ATLANTA, GA 30342",
   },

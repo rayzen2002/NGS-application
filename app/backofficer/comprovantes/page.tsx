@@ -1,10 +1,17 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { FieldError, useForm, UseFormRegister } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Check, ChevronsUpDown, Plus, Search } from 'lucide-react';
 import { Header } from '@/components/header/page';
+import { lienholderList } from '@/app/backofficer/financeiras/financeiras';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   state: z.string().min(1, 'Estado é obrigatório'),
@@ -41,11 +48,40 @@ interface InputFieldProps {
 
 type FormData = z.infer<typeof formSchema>;
 
+type LienholderMode = 'list' | 'manual';
+
+function splitLienholderAddress(address: string) {
+  const [streetAddress, ...cityStateZipParts] = address.split(',');
+
+  return {
+    lienAddress: streetAddress.trim(),
+    lienCityStateZip: cityStateZipParts.join(',').trim(),
+  };
+}
+
 export default function Comprovantes() {
   const validStates = [
   'AR', 'CT', 'FL', 'GA', 'MA', 'MD', 'ME',
   'NC', 'NH',  'NJ', 'NY', 'OH', 'PA', 'RI', 'SC'
 ] as const;
+  const [lienholderMode, setLienholderMode] = useState<LienholderMode>('list');
+  const [lienholderSearch, setLienholderSearch] = useState('');
+  const [lienholderPopoverOpen, setLienholderPopoverOpen] = useState(false);
+  const [selectedLienholderName, setSelectedLienholderName] = useState('');
+
+  const filteredLienholders = useMemo(() => {
+    const normalizedSearch = lienholderSearch.trim().toLowerCase();
+
+    if (!normalizedSearch) {
+      return lienholderList;
+    }
+
+    return lienholderList.filter((lienholder) => {
+      return `${lienholder.name} ${lienholder.address}`
+        .toLowerCase()
+        .includes(normalizedSearch);
+    });
+  }, [lienholderSearch]);
 
   const {
     register,
@@ -63,6 +99,43 @@ export default function Comprovantes() {
   });
 
   const lienholderSelected = watch('lienholder');
+  const lienholderInput = register('lienholder');
+
+  const clearLienholderFields = () => {
+    setValue('lien_name', '');
+    setValue('lien_address', '');
+    setValue('lien_city_state_zip', '');
+  };
+
+  const handleLienholderToggle = (checked: boolean) => {
+    setValue('lienholder', checked);
+
+    if (!checked) {
+      setLienholderMode('list');
+      setSelectedLienholderName('');
+      setLienholderSearch('');
+      clearLienholderFields();
+    }
+  };
+
+  const handleSelectLienholder = (lienholder: (typeof lienholderList)[number]) => {
+    const { lienAddress, lienCityStateZip } = splitLienholderAddress(lienholder.address);
+
+    setLienholderMode('list');
+    setSelectedLienholderName(lienholder.name);
+    setValue('lien_name', lienholder.name);
+    setValue('lien_address', lienAddress);
+    setValue('lien_city_state_zip', lienCityStateZip);
+    setLienholderPopoverOpen(false);
+  };
+
+  const handleManualLienholder = () => {
+    setLienholderMode('manual');
+    setSelectedLienholderName('');
+    setLienholderSearch('');
+    setLienholderPopoverOpen(false);
+    clearLienholderFields();
+  };
 
   const onSubmit = async (data: FormData) => {
     console.log(data)
@@ -139,13 +212,109 @@ export default function Comprovantes() {
           {/* Seção: Financiamento */}
           <section>
             <label className="flex items-center space-x-2">
-              <input type="checkbox" {...register('lienholder')} />
+              <input
+                type="checkbox"
+                {...lienholderInput}
+                checked={lienholderSelected}
+                onChange={(event) => {
+                  lienholderInput.onChange(event);
+                  handleLienholderToggle(event.target.checked);
+                }}
+              />
               <span>Possui financiamento?</span>
             </label>
 
             {lienholderSelected && (
               <div className="border border-gray-200 p-4 mt-4 rounded-md  space-y-4">
                 <h3 className="text-md font-medium ">Dados da financeira</h3>
+                {lienholderMode === 'list' && (
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium">Selecionar financeira</label>
+                      <Popover open={lienholderPopoverOpen} onOpenChange={setLienholderPopoverOpen}>
+                        <PopoverTrigger asChild>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            className="mt-1 w-full justify-between whitespace-normal text-left h-auto min-h-10"
+                          >
+                            <span className={cn(!selectedLienholderName && 'text-muted-foreground')}>
+                              {selectedLienholderName || 'Pesquisar financeira...'}
+                            </span>
+                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent
+                          align="start"
+                          className="w-[var(--radix-popover-trigger-width)] border-slate-200 bg-white p-0 text-slate-950 shadow-lg"
+                        >
+                          <div className="border-b p-2">
+                            <div className="relative">
+                              <Search className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                value={lienholderSearch}
+                                onChange={(event) => setLienholderSearch(event.target.value)}
+                                placeholder="Buscar por nome ou endereço..."
+                                className="pl-9"
+                              />
+                            </div>
+                          </div>
+                          <div className="max-h-64 overflow-y-auto p-1">
+                            {filteredLienholders.length > 0 ? (
+                              filteredLienholders.map((lienholder) => (
+                                <button
+                                  key={`${lienholder.name}-${lienholder.address}`}
+                                  type="button"
+                                  onClick={() => handleSelectLienholder(lienholder)}
+                                  className="flex w-full items-start gap-2 rounded-sm px-3 py-2 text-left text-sm hover:bg-slate-100"
+                                >
+                                  <Check
+                                    className={cn(
+                                      'mt-0.5 h-4 w-4',
+                                      selectedLienholderName === lienholder.name ? 'opacity-100' : 'opacity-0',
+                                    )}
+                                  />
+                                  <span>
+                                    <span className="block font-medium">{lienholder.name}</span>
+                                    <span className="block text-xs text-muted-foreground">{lienholder.address}</span>
+                                  </span>
+                                </button>
+                              ))
+                            ) : (
+                              <p className="px-3 py-6 text-center text-sm text-muted-foreground">
+                                Nenhuma financeira encontrada.
+                              </p>
+                            )}
+                          </div>
+                          <div className="border-t p-2">
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              className="w-full justify-start"
+                              onClick={handleManualLienholder}
+                            >
+                              <Plus className="h-4 w-4" />
+                              Financeira não listada
+                            </Button>
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    </div>
+                  </div>
+                )}
+                {lienholderMode === 'manual' && (
+                  <div className="flex flex-col gap-2 rounded-md border border-dashed p-3 md:flex-row md:items-center md:justify-between">
+                    <span className="text-sm text-muted-foreground">Preencha os dados manualmente.</span>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setLienholderMode('list')}
+                    >
+                      Buscar na lista
+                    </Button>
+                  </div>
+                )}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <InputField name="lien_name" label="Nome da Financeira" register={register} errors={errors} />
                   <InputField name="lien_address" label="Endereço da Financeira" register={register} errors={errors} />
@@ -197,4 +366,3 @@ function InputField({ name, label, register, errors, className = '' }: InputFiel
     </div>
   );
 }
-
