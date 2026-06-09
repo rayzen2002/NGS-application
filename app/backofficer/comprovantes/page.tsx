@@ -50,6 +50,15 @@ type FormData = z.infer<typeof formSchema>;
 
 type LienholderMode = 'list' | 'manual';
 
+function formatTodayAsShortUsDate() {
+  const today = new Date();
+  const month = String(today.getMonth() + 1).padStart(2, '0');
+  const day = String(today.getDate()).padStart(2, '0');
+  const year = String(today.getFullYear()).slice(-2);
+
+  return `${month}/${day}/${year}`;
+}
+
 function splitLienholderAddress(address: string) {
   const [streetAddress, ...cityStateZipParts] = address.split(',');
 
@@ -93,6 +102,7 @@ export default function Comprovantes() {
   } = useForm<FormData>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      new_policy_start_date: formatTodayAsShortUsDate(),
       lienholder: false,
       garaging_proof: false,
     },
