@@ -9,6 +9,14 @@ dayjs.extend(customParseFormat);
 
 type Dado = Record<string, unknown>;
 
+function extrairNumeroApolice(link?: unknown): string {
+  const url = String(link || '');
+  const policyMatch = url.match(/policy\D{0,30}(\d{6,})/i);
+  const fallbackMatch = url.match(/\d{6,}/);
+
+  return policyMatch?.[1] || fallbackMatch?.[0] || '';
+}
+
 const getVendedores = async (): Promise<Record<string, string>> => {
   const response = await fetch(`${process.env.NEXT_PUBLIC_IMG_BASE_URL}/api/v1/sellers-info`);
   const data = await response.json();
@@ -127,7 +135,7 @@ export const exportarExcelFechamentosDia = async (
     const linha = {
       'BACKOFFICER': backofficeName.toUpperCase(),
       'DATA': formatarData(dado.started_at as string),
-      'NÚMERO DA APÓLICE': '',
+      'NÚMERO DA APÓLICE': extrairNumeroApolice(dado.trello_card_url),
       'CLIENTE': String(dado.customer || '').toUpperCase(),
       'VENDEDOR': vendedoresMap[String(dado.seller_id)] || 'Desconhecido',
       'INÍCIO': formatarHora(dado.started_at as string),
